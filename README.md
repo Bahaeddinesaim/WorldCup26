@@ -40,7 +40,7 @@ The project follows these rules:
 | FBref | Implemented | `collectors/fbref_player_stats_scraper.py` scrapes Standard, Shooting, Passing, Pass Types, GCA, Defense, Possession, Playing Time and Misc tables using the widget/page pattern from the notebook. Some environments receive FBref anti-bot pages; failures are logged and fallbacks continue. |
 | Sofascore | Scaffolded | Disabled by default. Enable only with permitted API/access. |
 | FotMob | Scaffolded | Disabled by default. Enable only with permitted API/access. |
-| Transfermarkt | Scaffolded | Automated scraping disabled by default. Use allowed export/API/manual CSV. |
+| Transfermarkt | Implemented | Uses `requests` + `BeautifulSoup` with player slugs. Extracts bio, club, contract, market value and profile metadata when Transfermarkt serves the page. |
 | WhoScored | Scaffolded | Disabled by default due dynamic/session-heavy pages. |
 | Understat | Scaffolded | Disabled until permitted IDs/endpoints are configured. |
 | StatsBomb Open Data | Scaffolded | Open match-event data, not universal season player data. Needs competition/match config. |
@@ -119,6 +119,29 @@ pip install -r requirements.txt
 copy .env.example .env
 streamlit run app.py
 ```
+
+## Standalone Scraping Pipeline
+
+The repository includes an Edd Webster-style notebook/script pipeline:
+
+```bash
+python moroccan_players_scraper.py
+```
+
+Main outputs:
+
+- `data/raw/fbref_moroccan_wc26.csv`
+- `data/raw/transfermarkt_moroccan_wc26.csv`
+- `data/raw/capology_moroccan_wc26.csv`
+- `data/raw/whoscored_moroccan_wc26.csv`
+- `data/processed/moroccan_players_wc26_master.csv`
+- `data/cache/squad_data.sqlite`
+
+Notebook:
+
+- `Moroccan_Players_WC26_Scraping.ipynb`
+
+The script follows the reference notebook style: `requests`, `BeautifulSoup`, `pandas.read_html()`, `tqdm` progress bars, cache checks, source-specific rate limits, exponential backoff for HTTP 429, raw CSV exports and a processed master table. Missing source IDs or blocked pages are logged and kept as `N/A`; no statistics are invented.
 
 macOS/Linux:
 

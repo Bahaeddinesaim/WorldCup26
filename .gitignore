@@ -9,4 +9,6 @@ data/*.sqlite3
 data/cache/*.db
 data/cache/*.sqlite
 data/cache/*.sqlite3
+data/raw/*.csv
+data/processed/*.csv
 .streamlit/secrets.toml
