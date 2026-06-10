@@ -8,41 +8,52 @@ from .config import load_settings
 
 
 def offline_player_analysis(row: pd.Series) -> str:
-    status = row.get("data_status", "manual")
+    source = row.get("data_source", "N/A")
+    reliability = row.get("reliability", "LOW")
+    score = row.get("final_score", "N/A")
+    if score == "N/A":
+        return (
+            f"{row['player_name']} has insufficient verified data for a full AI football profile. "
+            f"Known fields: position={row.get('primary_position', 'N/A')}, club={row.get('club', 'N/A')}, "
+            f"league={row.get('league', 'N/A')}. Source={source}, reliability={reliability}. "
+            "The model will not infer form, weaknesses or tactical superiority without collected evidence."
+        )
     return (
         f"{row['player_name']} profile as a {row['primary_position']} for Morocco. "
-        f"The current model rates him at {row['final_score']}/100 using {status} data. "
-        f"His strongest indicators are form ({row['recent_form']}/100), playing time "
-        f"({row['playing_time_score']}/100) and tactical fit ({row['tactical_fit']}/100). "
-        f"Role in squad: {row['role_projection']}."
+        f"The current real-data model rates him at {score}/100. "
+        f"Source={source}; reliability={reliability}; last updated={row.get('last_updated', 'N/A')}. "
+        f"Available indicators include form={row.get('recent_form', 'N/A')}, "
+        f"minutes score={row.get('playing_time_score', 'N/A')} and league level={row.get('league_level', 'N/A')}."
     )
 
 
 def offline_squad_report(players: pd.DataFrame, formation_summary: dict) -> str:
-    top = players.sort_values("final_score", ascending=False).head(5)
-    watched = players.sort_values(["potential", "final_score"], ascending=False).head(5)
+    scored = players.copy()
+    scored["score_numeric"] = pd.to_numeric(scored.get("final_score"), errors="coerce")
+    top = scored.dropna(subset=["score_numeric"]).sort_values("score_numeric", ascending=False).head(5)
     top_names = ", ".join(top["player_name"].tolist())
-    watched_names = ", ".join(watched["player_name"].tolist())
+    if not top_names:
+        top_names = "N/A - insufficient real data to rank players."
     formation = formation_summary["formation"]
+    completeness = round(
+        float((~players.astype(str).isin(["N/A", "", "nan"])).mean(numeric_only=False).mean() * 100),
+        1,
+    )
     return textwrap.dedent(
         f"""
         Morocco World Cup 2026 AI Squad Analyzer - Full Report
 
         Data notice
-        This report uses a hybrid dataset. Fields marked real can come from validated providers, manual
-        fields are curated by the project owner, and estimated fields are model placeholders designed
-        for demonstration until API integrations are activated.
+        This report uses only collected or manually seeded fields. Missing values remain N/A.
+        The system does not invent statistics, form, injuries, market values or tactical conclusions.
 
         Executive summary
-        The current squad pool contains {len(players)} players across goalkeepers, defenders,
-        midfielders and forwards. The model recommends {formation} as the leading structure based
-        on weighted form, league level, playing time, international experience, tactical fit and versatility.
+        The current squad pool contains {len(players)} players. Dataset completeness is approximately
+        {completeness}%. The model recommends {formation}, but tactical confidence depends on the
+        amount of real player data available.
 
-        Core players
+        Rankable players
         {top_names}
-
-        Players to monitor
-        {watched_names}
 
         Tactical recommendation
         Strengths: {formation_summary['strengths']}
@@ -50,9 +61,10 @@ def offline_squad_report(players: pd.DataFrame, formation_summary: dict) -> str:
         Risks: {formation_summary['risks']}
 
         Conclusion
-        Morocco's best profile is a balanced team with elite wide quality, a secure goalkeeper,
-        and midfielders selected according to game state. The next step is connecting live data
-        providers to replace estimated indicators with real match-by-match evidence.
+        Conclusion
+        If the quality report shows many N/A values, the football conclusion should be treated as
+        provisional. Add API keys, FBref URLs or approved source exports, refresh the cache, then
+        rerun the report.
         """
     ).strip()
 
@@ -72,7 +84,7 @@ def generate_player_analysis(row: pd.Series) -> str:
                         "role": "user",
                         "content": (
                             "Write a professional squad profile in English from this data: "
-                            f"{row.to_dict()}"
+                            f"{row.to_dict()}. Do not infer unavailable fields. Say clearly when data is insufficient."
                         ),
                     },
                 ],
@@ -99,8 +111,8 @@ def generate_full_report(players: pd.DataFrame, formation_summary: dict) -> str:
                     {
                         "role": "user",
                         "content": (
-                            "Rewrite this into a polished executive football report, keeping "
-                            "the data-status warning explicit:\n\n" + base_report
+                            "Rewrite this into a polished executive football report. Do not invent missing data. "
+                            "Keep the N/A and data-quality warning explicit:\n\n" + base_report
                         ),
                     },
                 ],

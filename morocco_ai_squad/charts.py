@@ -20,10 +20,17 @@ def line_distribution(players: pd.DataFrame) -> go.Figure:
 
 
 def score_bar(players: pd.DataFrame, n: int = 12) -> go.Figure:
-    data = players.sort_values("final_score", ascending=False).head(n)
+    data = players.copy()
+    data["score_numeric"] = pd.to_numeric(data["final_score"], errors="coerce")
+    data = data.dropna(subset=["score_numeric"]).sort_values("score_numeric", ascending=False).head(n)
+    if data.empty:
+        fig = go.Figure()
+        fig.add_annotation(text="No reliable real-data score available yet", showarrow=False)
+        fig.update_layout(height=430, margin=dict(l=10, r=10, t=20, b=10))
+        return fig
     fig = px.bar(
         data,
-        x="final_score",
+        x="score_numeric",
         y="player_name",
         orientation="h",
         color="line",
@@ -49,7 +56,8 @@ def radar_player(row: pd.Series) -> go.Figure:
         "tactical_fit",
         "versatility",
     ]
-    values = [row[c] for c in categories]
+    values = [pd.to_numeric(row.get(c), errors="coerce") for c in categories]
+    values = [0 if pd.isna(v) else float(v) for v in values]
     labels = ["Form", "League", "Minutes", "Experience", "Tactical fit", "Versatility"]
     fig = go.Figure(
         data=[
@@ -71,18 +79,25 @@ def radar_player(row: pd.Series) -> go.Figure:
 
 
 def group_comparison(players: pd.DataFrame) -> go.Figure:
+    players = players.copy()
+    players["score_numeric"] = pd.to_numeric(players["final_score"], errors="coerce")
+    if players["score_numeric"].dropna().empty:
+        fig = go.Figure()
+        fig.add_annotation(text="No reliable group scores available yet", showarrow=False)
+        fig.update_layout(height=340, margin=dict(l=10, r=10, t=20, b=20))
+        return fig
     grouped = (
-        players.groupby("position_group", as_index=False)["final_score"]
+        players.groupby("position_group", as_index=False)["score_numeric"]
         .mean()
-        .sort_values("final_score", ascending=False)
+        .sort_values("score_numeric", ascending=False)
     )
     fig = px.bar(
         grouped,
         x="position_group",
-        y="final_score",
+        y="score_numeric",
         color="position_group",
         color_discrete_sequence=COLORWAY,
-        text=grouped["final_score"].round(1),
+        text=grouped["score_numeric"].round(1),
     )
     fig.update_layout(
         showlegend=False,

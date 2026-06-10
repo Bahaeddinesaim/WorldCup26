@@ -1,12 +1,20 @@
 from __future__ import annotations
 
+import pandas as pd
 import streamlit as st
 
 from morocco_ai_squad.ai_analysis import generate_full_report, generate_player_analysis
 from morocco_ai_squad.charts import group_comparison, line_distribution, radar_player, score_bar
-from morocco_ai_squad.data_loader import ensure_database_seeded, filter_players
+from morocco_ai_squad.data_loader import ensure_real_data_loaded, filter_players, refresh_real_pipeline
+from morocco_ai_squad.database.db import load_fetch_logs
 from morocco_ai_squad.report import build_pdf
 from morocco_ai_squad.scoring import POSITION_GROUPS, add_position_groups, add_scores, compare_by_group
+from morocco_ai_squad.services.data_quality import (
+    incoherence_report,
+    missing_value_report,
+    quality_summary,
+    stale_data_report,
+)
 from morocco_ai_squad.tactics import FORMATIONS, build_lineup, recommended_formation
 from morocco_ai_squad.ui import data_notice, hero, inject_theme, lineup_table, metric_card, player_cards, render_pitch
 
@@ -19,27 +27,34 @@ st.set_page_config(
 
 inject_theme()
 
-players = ensure_database_seeded()
+players = ensure_real_data_loaded()
 players = add_position_groups(add_scores(players))
 
 with st.sidebar:
     st.title("Squad Controls")
+    if st.button("Refresh Real Data", use_container_width=True):
+        with st.spinner("Collecting real data from configured sources..."):
+            players, logs = refresh_real_pipeline()
+            players = add_position_groups(add_scores(players))
+            st.success(f"Refresh complete. Collector events: {len(logs)}")
     search = st.text_input("Search player or club")
     lines = st.multiselect("Lines", sorted(players["line"].unique().tolist()))
-    source_types = st.multiselect("Data status", sorted(players["data_status"].unique().tolist()))
+    source_types = st.multiselect("Reliability", sorted(players["reliability"].unique().tolist()))
     formation = st.selectbox("Formation", list(FORMATIONS.keys()), index=list(FORMATIONS.keys()).index("4-2-3-1"))
-    st.caption("Seed data is designed for the app. Connect real providers before making factual claims.")
+    st.caption("Unavailable values remain N/A. Add API keys or approved URLs, then refresh.")
 
 filtered = filter_players(players, search, lines, source_types)
 
 hero()
 data_notice()
 
-tabs = st.tabs(["Dashboard", "Players", "Comparisons", "Tactics", "AI Report", "Data Sources"])
+tabs = st.tabs(["Dashboard", "Players", "Comparisons", "Tactics", "AI Report", "Data Sources & Reliability"])
 
 with tabs[0]:
-    avg_age = filtered["age"].mean() if len(filtered) else 0
-    avg_score = filtered["final_score"].mean() if len(filtered) else 0
+    age_numeric = pd.to_numeric(filtered["age"], errors="coerce")
+    score_numeric = pd.to_numeric(filtered["final_score"], errors="coerce")
+    avg_age = age_numeric.mean() if len(filtered) and not age_numeric.dropna().empty else None
+    avg_score = score_numeric.mean() if len(filtered) and not score_numeric.dropna().empty else None
     clubs = filtered["club"].nunique() if len(filtered) else 0
     leagues = filtered["league"].nunique() if len(filtered) else 0
 
@@ -47,9 +62,9 @@ with tabs[0]:
     with m1:
         metric_card("Players", str(len(filtered)), "Current filtered squad pool")
     with m2:
-        metric_card("Average age", f"{avg_age:.1f}", "Years")
+        metric_card("Average age", f"{avg_age:.1f}" if avg_age is not None else "N/A", "Years")
     with m3:
-        metric_card("Average score", f"{avg_score:.1f}", "Weighted model score")
+        metric_card("Average score", f"{avg_score:.1f}" if avg_score is not None else "N/A", "Real-data weighted score")
     with m4:
         metric_card("Clubs / leagues", f"{clubs} / {leagues}", "Representation")
 
@@ -66,6 +81,9 @@ with tabs[0]:
 
 with tabs[1]:
     st.subheader("Detailed player profile")
+    if filtered.empty:
+        st.warning("No player matches the current filters.")
+        st.stop()
     selected_name = st.selectbox("Select player", filtered["player_name"].sort_values().tolist())
     selected = filtered[filtered["player_name"] == selected_name].iloc[0]
 
@@ -74,21 +92,19 @@ with tabs[1]:
         st.plotly_chart(radar_player(selected), use_container_width=True)
     with c2:
         metric_card(selected["player_name"], f"{selected['final_score']}/100", selected["role_projection"])
-        st.write(
+        st.json(
             {
-                "Position": selected["primary_position"],
-                "Secondary positions": selected["secondary_positions"],
-                "Age": int(selected["age"]),
-                "Club": selected["club"],
-                "League": selected["league"],
-                "Data status": selected["data_status"],
-                "Injury status": selected["injury_status"],
+                "Position": selected.get("primary_position", "N/A"),
+                "Secondary positions": selected.get("secondary_positions", "N/A"),
+                "Age": selected.get("age", "N/A"),
+                "Club": selected.get("club", "N/A"),
+                "League": selected.get("league", "N/A"),
+                "Data source": selected.get("data_source", "N/A"),
+                "Reliability": selected.get("reliability", "N/A"),
+                "Last updated": selected.get("last_updated", "N/A"),
+                "Injury status": selected.get("injury_status", "N/A"),
             }
         )
-        st.markdown("**Strengths**")
-        st.write(selected["strong_points"])
-        st.markdown("**Weaknesses**")
-        st.write(selected["weak_points"])
         st.markdown("**AI profile**")
         st.write(generate_player_analysis(selected))
 
@@ -97,15 +113,18 @@ with tabs[1]:
         filtered[
             [
                 "player_name",
-                "minutes_recent",
-                "goals_recent",
-                "assists_recent",
-                "clean_sheets_recent",
-                "duels_won_pct",
-                "pass_success_pct",
+                "matches_played",
+                "minutes_played",
+                "goals",
+                "assists",
+                "clean_sheets",
+                "xg",
+                "xa",
                 "avg_rating",
                 "final_score",
-                "data_status",
+                "data_source",
+                "reliability",
+                "last_updated",
             ]
         ],
         use_container_width=True,
@@ -123,6 +142,7 @@ with tabs[2]:
                 "player_name",
                 "primary_position",
                 "club",
+                "league",
                 "recent_form",
                 "league_level",
                 "playing_time_score",
@@ -130,6 +150,8 @@ with tabs[2]:
                 "tactical_fit",
                 "versatility",
                 "final_score",
+                "data_source",
+                "reliability",
                 "score_explanation",
             ]
         ],
@@ -159,9 +181,11 @@ with tabs[3]:
     rec = recommended_formation(filtered)
     for idx, name in enumerate(FORMATIONS):
         built = build_lineup(filtered, name)
-        avg = sum(item["player"]["final_score"] for item in built["lineup"]) / 11
+        numeric = [pd.to_numeric(item["player"].get("final_score"), errors="coerce") for item in built["lineup"]]
+        valid = [float(v) for v in numeric if not pd.isna(v)]
+        avg = sum(valid) / len(valid) if valid else None
         with cols[idx]:
-            metric_card(name, f"{avg:.1f}", "Recommended" if name == rec else "Alternative")
+            metric_card(name, f"{avg:.1f}" if avg is not None else "N/A", "Recommended" if name == rec else "Alternative")
 
 with tabs[4]:
     st.subheader("Generate Full AI Report")
@@ -177,19 +201,48 @@ with tabs[4]:
     )
 
 with tabs[5]:
-    st.subheader("Data architecture and source readiness")
+    st.subheader("Data Sources & Reliability")
+    summary = quality_summary(players)
+    q1, q2, q3, q4 = st.columns(4)
+    with q1:
+        metric_card("Players", str(summary["players"]), "Seeded squad pool")
+    with q2:
+        metric_card("Completeness", f"{summary['metric_completeness_pct']}%", "Metric fields filled")
+    with q3:
+        metric_card("Real rows", str(summary["real_data_rows"]), "Rows enriched by collectors")
+    with q4:
+        metric_card("Seed only", str(summary["seed_only_rows"]), "Need source IDs/API")
+
     st.write(
-        "The app currently ships with a curated seed dataset and a source-provider interface. "
-        "Real integrations can be added through `morocco_ai_squad/sources` while preserving data_status."
+        "The pipeline prioritizes official/allowed APIs. Scraping collectors run only when explicit URLs "
+        "or compliant access are configured. Missing data stays N/A."
     )
+    st.markdown("**Configured collectors**")
+    st.dataframe(load_fetch_logs(), use_container_width=True, hide_index=True)
+
+    st.markdown("**Missing data report**")
+    st.dataframe(missing_value_report(players), use_container_width=True, hide_index=True)
+
+    st.markdown("**Stale data report**")
+    stale = stale_data_report(players)
+    st.dataframe(stale if not stale.empty else [{"status": "No stale rows detected"}], use_container_width=True)
+
+    st.markdown("**Incoherence report**")
+    incoherent = incoherence_report(players)
+    st.dataframe(incoherent if not incoherent.empty else [{"status": "No incoherence detected"}], use_container_width=True)
+
+    st.markdown("**Player provenance**")
     st.dataframe(
         players[
             [
                 "player_name",
                 "club",
                 "league",
-                "data_status",
-                "source_name",
+                "data_source",
+                "source_url",
+                "last_updated",
+                "reliability",
+                "collection_status",
                 "injury_status",
             ]
         ],

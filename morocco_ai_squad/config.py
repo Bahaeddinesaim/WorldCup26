@@ -11,6 +11,7 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT_DIR / "data"
 ASSETS_DIR = ROOT_DIR / "assets"
 SEED_PLAYERS_PATH = DATA_DIR / "seed_players.csv"
+PLAYERS_SEED_PATH = DATA_DIR / "players_seed.csv"
 SQLITE_PATH = DATA_DIR / "morocco_squad.db"
 
 
@@ -22,6 +23,8 @@ class Settings:
     gemini_api_key: str | None = None
     gemini_model: str = "gemini-1.5-flash"
     api_football_key: str | None = None
+    rapidapi_host: str = "api-football-v1.p.rapidapi.com"
+    football_data_base_url: str = "https://www.football-data.co.uk"
 
 
 def load_settings() -> Settings:
@@ -33,4 +36,6 @@ def load_settings() -> Settings:
         gemini_api_key=os.getenv("GEMINI_API_KEY") or None,
         gemini_model=os.getenv("GEMINI_MODEL", "gemini-1.5-flash"),
         api_football_key=os.getenv("API_FOOTBALL_KEY") or None,
+        rapidapi_host=os.getenv("RAPIDAPI_HOST", "api-football-v1.p.rapidapi.com"),
+        football_data_base_url=os.getenv("FOOTBALL_DATA_BASE_URL", "https://www.football-data.co.uk"),
     )

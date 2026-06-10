@@ -1,76 +1,111 @@
 # Morocco World Cup 2026 AI Squad Analyzer
 
-Professional AI and football analytics platform for evaluating Morocco's 2026 World Cup squad pool, comparing players by role, generating tactical lineups and exporting an AI-assisted report.
+Real Football Data Pipeline + AI Squad Analyzer for evaluating Morocco's 2026 World Cup squad pool.
 
-> Data transparency notice: the repository ships with a seed dataset for demonstration. It clearly separates `real`, `manual` and `estimated` data. Do not present estimated metrics as verified facts. Connect validated providers before publishing factual performance claims.
+This project is designed to be credible, source-aware and honest about missing data. It does not invent football statistics. If a source is unavailable, not configured or not legally collectable, the value stays `N/A`.
 
-## Features
+## What The App Does
 
-- Premium Streamlit dashboard with Morocco-inspired visual identity.
-- Squad overview: age, clubs, leagues, line distribution and weighted top players.
-- Detailed player profiles with statistical snapshot, strengths, weaknesses and AI analysis.
-- Position-by-position comparison for goalkeepers, centre backs, full backs, midfielders, wingers and strikers.
-- Weighted scoring model:
-  - Recent form: 25%
-  - League level: 15%
-  - Playing time: 20%
-  - International experience: 15%
-  - Tactical fit: 15%
-  - Versatility: 10%
-- Tactical engine for:
+- Maintains an initial Moroccan player seed list in `data/players_seed.csv`.
+- Enriches players through a real-data collector pipeline.
+- Stores collected data in a local SQLite cache.
+- Tracks `data_source`, `source_url`, `last_updated`, `reliability` and collection logs.
+- Scores players only when enough real fields are available.
+- Generates tactical lineups for:
   - 4-2-3-1
   - 4-3-3
   - 3-4-3
   - 4-4-2
   - 3-5-2
-- Visual football pitch with selected players.
-- Formation strengths, weaknesses, tactical risks and recommended substitutes.
-- Full AI report generation with PDF export.
-- SQLite persistence seeded from CSV.
-- Source-provider architecture ready for legal public data or paid API integration.
+- Exports an AI-assisted PDF report.
+- Shows a `Data Sources & Reliability` page with missing-data, stale-data and incoherence checks.
 
-## Tech Stack
+## Real Data Policy
 
-- Python
-- Streamlit
-- Pandas
-- Plotly
-- SQLite
-- BeautifulSoup / requests scaffolding
-- OpenAI API optional
-- Gemini-ready configuration
-- fpdf2 PDF export
+The project follows these rules:
+
+- No invented stats.
+- Missing data is displayed as `N/A`.
+- Every collected value must carry a source and update date.
+- Scraping is disabled unless the source URL/access is explicitly configured and allowed.
+- API sources are preferred over scraping.
+- AI analysis must say when data is insufficient.
+
+## Current Source Strategy
+
+| Source | Status | Notes |
+| --- | --- | --- |
+| API-Football via RapidAPI | Implemented | Requires `API_FOOTBALL_KEY`. Collects player profile/stat fields returned by the provider. |
+| FBref | Semi-automated | Works only when `fbref_url` is configured per player in `data/players_seed.csv`. Parses public HTML tables without bypassing access controls. |
+| Sofascore | Scaffolded | Disabled by default. Enable only with permitted API/access. |
+| FotMob | Scaffolded | Disabled by default. Enable only with permitted API/access. |
+| Transfermarkt | Scaffolded | Automated scraping disabled by default. Use allowed export/API/manual CSV. |
+| WhoScored | Scaffolded | Disabled by default due dynamic/session-heavy pages. |
+| Understat | Scaffolded | Disabled until permitted IDs/endpoints are configured. |
+| StatsBomb Open Data | Scaffolded | Open match-event data, not universal season player data. Needs competition/match config. |
+| Football-Data.co.uk | Scaffolded | Mostly team/match CSVs, not player-level stats. Logged as unavailable for player enrichment. |
+
+## Data Fields
+
+The pipeline targets:
+
+- club
+- age
+- position
+- league
+- matches played
+- minutes played
+- goals
+- assists
+- clean sheets
+- xG / xA
+- average rating
+- injury status
+- market value
+- transfer history
+- recent form
+- offensive and defensive actions
+
+Availability depends entirely on configured sources.
 
 ## Project Structure
 
 ```text
 .
 ├── app.py
-├── requirements.txt
-├── .env.example
-├── README.md
-├── LICENSE
 ├── data/
-│   └── seed_players.csv
-├── assets/
-│   └── screenshots/
-└── morocco_ai_squad/
-    ├── ai_analysis.py
-    ├── charts.py
-    ├── config.py
-    ├── data_loader.py
-    ├── database.py
-    ├── report.py
-    ├── scoring.py
-    ├── tactics.py
-    ├── ui.py
-    └── sources/
-        ├── base.py
-        ├── mock_provider.py
-        └── public_web_provider.py
+│   ├── players_seed.csv
+│   └── seed_players.csv              # legacy demo seed kept for reference
+├── morocco_ai_squad/
+│   ├── collectors/
+│   │   ├── api_football_collector.py
+│   │   ├── fbref_collector.py
+│   │   ├── football_data_collector.py
+│   │   ├── fotmob_collector.py
+│   │   ├── sofascore_collector.py
+│   │   ├── statsbomb_open_data_collector.py
+│   │   ├── transfermarkt_collector.py
+│   │   ├── understat_collector.py
+│   │   └── whoscored_collector.py
+│   ├── database/
+│   │   ├── db.py
+│   │   └── models.py
+│   ├── services/
+│   │   ├── data_merger.py
+│   │   ├── data_quality.py
+│   │   ├── player_scoring.py
+│   │   └── tactical_ai.py
+│   ├── ai_analysis.py
+│   ├── charts.py
+│   ├── config.py
+│   ├── data_loader.py
+│   ├── report.py
+│   ├── scoring.py
+│   ├── tactics.py
+│   └── ui.py
 ```
 
-## Local Setup
+## Setup
 
 ```bash
 python -m venv .venv
@@ -80,7 +115,7 @@ copy .env.example .env
 streamlit run app.py
 ```
 
-On macOS/Linux:
+macOS/Linux:
 
 ```bash
 python -m venv .venv
@@ -90,119 +125,99 @@ cp .env.example .env
 streamlit run app.py
 ```
 
-## Optional AI Configuration
+## API-Football Configuration
 
-By default, the app runs in offline mode with deterministic football-analysis text.
+Create `.env` from `.env.example` and add:
 
-To use OpenAI:
+```env
+API_FOOTBALL_KEY=your_rapidapi_key
+RAPIDAPI_HOST=api-football-v1.p.rapidapi.com
+```
+
+Then open the app and click `Refresh Real Data`.
+
+## FBref Configuration
+
+Add a public player page URL in `data/players_seed.csv`:
+
+```csv
+player_id,player_name,...,fbref_url,...
+df_hakimi,Achraf Hakimi,...,https://fbref.com/en/players/...
+```
+
+Then click `Refresh Real Data`. The collector parses available public tables and leaves missing fields as `N/A`.
+
+## Cache
+
+Collected data is cached in:
+
+```text
+data/morocco_squad.db
+```
+
+The app loads cached data by default to avoid unnecessary repeated requests. Use `Refresh Real Data` for a manual refresh.
+
+## Data Quality
+
+The `Data Sources & Reliability` page includes:
+
+- collector logs;
+- missing field report;
+- stale timestamp report;
+- incoherence checks;
+- player-level provenance.
+
+Programmatic checks live in:
+
+```text
+morocco_ai_squad/services/data_quality.py
+```
+
+## Scoring
+
+Scoring is intentionally conservative. It computes a score only if enough real inputs exist. If not, the score is `N/A`.
+
+Available score inputs:
+
+- recent form;
+- league level;
+- playing time;
+- international experience;
+- tactical fit;
+- versatility.
+
+Some of these require future real-data providers or curated verified datasets. They are not guessed.
+
+## AI Analysis
+
+The AI module receives only collected/cached fields. It is instructed not to infer missing data. Offline mode also refuses to produce strong football claims when data is insufficient.
+
+Optional OpenAI setup:
 
 ```env
 AI_PROVIDER=openai
-OPENAI_API_KEY=your_key_here
+OPENAI_API_KEY=your_key
 OPENAI_MODEL=gpt-4o-mini
 ```
 
-Gemini settings are included in `.env.example` for future extension.
+## Limitations
 
-## Data Model
+- Several requested sources do not provide simple, stable, public player-stat APIs.
+- Some websites restrict automated access or require dynamic/session-based loading.
+- Player matching across sources requires stable IDs; the seed file currently leaves IDs as `N/A` until manually configured.
+- Transfer values, injuries and transfer histories are provider-dependent and often not freely available at scale.
+- The project is production-shaped, but real accuracy depends on configured source credentials and identifiers.
 
-The seed CSV contains the initial Moroccan squad pool requested by the project:
+## GitHub / LinkedIn Positioning
 
-- Goalkeepers
-- Defenders
-- Midfielders
-- Forwards
-- Reserves
+Good framing:
 
-Each player includes:
+- "I built a real-data-first football analytics pipeline."
+- "The project refuses to invent data and surfaces quality limitations."
+- "Collectors are source-aware and legally cautious."
+- "The UI combines football analytics, tactical modeling, AI reporting and data engineering."
 
-- Identity and positions
-- Age, club and league placeholders
-- Recent minutes, goals, assists and defensive indicators
-- Weighted scoring inputs
-- Data status
-- Source name
-- Injury status placeholder
-- Strengths, weaknesses and squad role projection
-
-Important fields:
-
-- `data_status=real`: validated data from a reliable provider.
-- `data_status=manual`: manually curated project data.
-- `data_status=estimated`: placeholder or demonstration metric.
-
-## Adding Real Data Sources
-
-Implement a provider in `morocco_ai_squad/sources/` using `PlayerDataProvider`.
-
-Recommended integrations:
-
-- Paid football APIs with clear terms, such as API-Football.
-- Public datasets with explicit reuse permissions.
-- Manual CSV refreshes from verified scouting reports.
-- Public pages only when terms and robots policies allow collection.
-
-Avoid scraping behind login walls, paywalls or services that forbid automated extraction.
-
-## Scoring Logic
-
-The final score is computed in `morocco_ai_squad/scoring.py`:
-
-```python
-final_score =
-    recent_form * 0.25
-  + league_level * 0.15
-  + playing_time_score * 0.20
-  + international_experience * 0.15
-  + tactical_fit * 0.15
-  + versatility * 0.10
-```
-
-Every score has a generated explanation in the app.
-
-## Tactical Logic
-
-The tactical engine in `morocco_ai_squad/tactics.py` defines slots for every formation. Each slot has:
-
-- Tactical label
-- Pitch coordinates
-- Accepted positions
-
-The selector picks the best available player for each slot using:
-
-- Player final score
-- Primary-position fit
-- Secondary-position fit
-- Tactical-fit bonus
-
-## GitHub Publishing Checklist
-
-1. Replace or verify estimated data before making factual claims.
-2. Add screenshots to `assets/screenshots/`.
-3. Add a short demo GIF or LinkedIn-ready screenshot.
-4. Keep `.env` out of Git.
-5. Push with a clean commit history.
-6. Add repository topics: `football-analytics`, `world-cup-2026`, `streamlit`, `ai`, `data-science`, `morocco`.
-
-## LinkedIn Presentation Angle
-
-Suggested post framing:
-
-- Problem: preparing squad decisions requires fragmented data across many sources.
-- Solution: an AI and data platform that centralizes player profiles, scoring and tactical simulation.
-- Technical depth: Streamlit, SQLite, Pandas, Plotly, source-provider architecture, PDF reporting and optional LLM analysis.
-- Responsible data: every metric is labeled as real, manual or estimated.
-- Next step: connect validated live APIs and automate weekly refreshes.
-
-## Roadmap
-
-- API-Football connector.
-- Match-by-match trend tables.
-- Injury availability confidence score.
-- Player similarity search.
-- Automated weekly refresh workflow.
-- GitHub Actions data validation.
-- Multilingual reports in English, French and Arabic.
+Avoid claiming complete real coverage until source IDs/API keys are configured and quality reports are clean.
 
 ## License
 

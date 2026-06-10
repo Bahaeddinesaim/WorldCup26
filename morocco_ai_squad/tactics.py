@@ -124,11 +124,17 @@ def _slot_score(row: pd.Series, slot: Slot) -> float:
         fit_bonus = 4
     else:
         fit_bonus = -25
-    return float(row["final_score"]) + fit_bonus + float(row["tactical_fit"]) * 0.04
+    final_score = pd.to_numeric(row.get("final_score"), errors="coerce")
+    tactical_fit = pd.to_numeric(row.get("tactical_fit"), errors="coerce")
+    base = 0.0 if pd.isna(final_score) else float(final_score)
+    tactical = 0.0 if pd.isna(tactical_fit) else float(tactical_fit) * 0.04
+    return base + fit_bonus + tactical
 
 
 def build_lineup(players: pd.DataFrame, formation: str) -> dict:
-    available = players.copy().sort_values("final_score", ascending=False)
+    available = players.copy()
+    available["_score_sort"] = pd.to_numeric(available.get("final_score"), errors="coerce").fillna(-1)
+    available = available.sort_values("_score_sort", ascending=False)
     selected_ids: set[str] = set()
     lineup = []
 
@@ -147,7 +153,9 @@ def build_lineup(players: pd.DataFrame, formation: str) -> dict:
 
     substitutes = (
         players[~players["player_id"].isin(selected_ids)]
-        .sort_values("final_score", ascending=False)
+        .assign(_score_sort=pd.to_numeric(players["final_score"], errors="coerce").fillna(-1))
+        .sort_values("_score_sort", ascending=False)
+        .drop(columns="_score_sort")
         .head(7)
         .to_dict("records")
     )
@@ -156,9 +164,15 @@ def build_lineup(players: pd.DataFrame, formation: str) -> dict:
 
 
 def _selection_reason(player: pd.Series, slot: Slot) -> str:
+    score = player.get("final_score", "N/A")
+    if score == "N/A" or pd.isna(pd.to_numeric(score, errors="coerce")):
+        return (
+            f"{player['player_name']} est place comme {slot.label.lower()} par compatibilite de poste, "
+            "mais les donnees reelles sont insuffisantes pour justifier un score fiable."
+        )
     return (
         f"{player['player_name']} est choisi comme {slot.label.lower()} grace a un score de "
-        f"{player['final_score']}/100, un fit tactique de {player['tactical_fit']}/100 "
+        f"{score}/100, un fit tactique de {player.get('tactical_fit', 'N/A')}/100 "
         f"et un profil compatible avec {slot.code}."
     )
 
@@ -167,5 +181,7 @@ def recommended_formation(players: pd.DataFrame) -> str:
     scores = {}
     for formation in FORMATIONS:
         lineup = build_lineup(players, formation)["lineup"]
-        scores[formation] = sum(item["player"]["final_score"] for item in lineup) / len(lineup)
+        numeric_scores = [pd.to_numeric(item["player"].get("final_score"), errors="coerce") for item in lineup]
+        valid_scores = [float(score) for score in numeric_scores if not pd.isna(score)]
+        scores[formation] = sum(valid_scores) / len(valid_scores) if valid_scores else 0
     return max(scores, key=scores.get)

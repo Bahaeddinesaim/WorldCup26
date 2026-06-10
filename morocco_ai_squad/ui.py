@@ -220,9 +220,8 @@ def data_notice() -> None:
     st.markdown(
         """
         <div class="notice">
-        This build separates <b>real</b>, <b>manual</b> and <b>estimated</b> data.
-        The included dataset is a clean seed dataset for product demonstration and architecture validation.
-        Replace estimated fields with validated API or public-source data before publishing factual claims.
+        Real-data mode: unavailable values stay <b>N/A</b>. The app never fabricates metrics.
+        Every collected field carries a source, update date and reliability level.
         </div>
         """,
         unsafe_allow_html=True,
@@ -240,9 +239,9 @@ def player_cards(players: pd.DataFrame, limit: int = 6) -> None:
                     <h3>{html.escape(row['player_name'])}</h3>
                     <p>{html.escape(row['primary_position'])} - {html.escape(row['club'])}</p>
                     <p>{html.escape(row['league'])}</p>
-                    <span class="pill">Score {row['final_score']}/100</span>
-                    <span class="pill">{html.escape(row['data_status'])}</span>
-                    <p style="margin-top:10px;">{html.escape(row['role_projection'])}</p>
+                    <span class="pill">Score {row.get('final_score', 'N/A')}/100</span>
+                    <span class="pill">{html.escape(str(row.get('reliability', 'LOW')))}</span>
+                    <p style="margin-top:10px;">Source: {html.escape(str(row.get('data_source', 'N/A')))}</p>
                 </div>
                 """,
                 unsafe_allow_html=True,

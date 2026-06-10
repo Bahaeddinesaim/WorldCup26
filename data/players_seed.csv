@@ -1,0 +1,30 @@
+player_id,player_name,short_name,line,primary_position,secondary_positions,country,fbref_url,sofascore_id,fotmob_id,transfermarkt_url,whoscored_url,understat_id,api_football_id,statsbomb_player_id,notes
+gk_bounou,Yassine Bounou,Y. Bounou,Goalkeepers,GK,GK,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
+gk_el_kajoui,Munir El Kajoui,M. El Kajoui,Goalkeepers,GK,GK,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
+gk_tagnaouti,Ahmed Reda Tagnaouti,A. Tagnaouti,Goalkeepers,GK,GK,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
+df_hakimi,Achraf Hakimi,A. Hakimi,Defenders,RB,RWB|LB|RW,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
+df_mazraoui,Noussair Mazraoui,N. Mazraoui,Defenders,LB,RB|DM|CM,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
+df_diop,Isa Diop,I. Diop,Defenders,CB,CB,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
+df_salah_eddine,Anass Salah-Eddine,Salah Eddine,Defenders,LB,LWB|CM,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
+df_el_ouahdi,Zakaria El Ouahdi,Z. El Ouahdi,Defenders,RB,RWB|RW,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
+df_halhal,Rachid Halhal,R. Halhal,Defenders,CB,CB|DM,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
+df_aguerd,Nayef Aguerd,N. Aguerd,Defenders,CB,CB|LB,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
+df_belammari,Youssef Belammari,Y. Belammari,Defenders,LB,LWB,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
+df_riad,Chadi Riad,C. Riad,Defenders,CB,CB,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
+mf_el_aynaoui,Neil El Aynaoui,N. El Aynaoui,Midfielders,CM,DM|AM,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
+mf_bouaddi,Ayyoub Bouaddi,A. Bouaddi,Midfielders,CM,DM|AM,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
+mf_ounahi,Azzedine Ounahi,A. Ounahi,Midfielders,CM,AM|DM,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
+mf_el_khannouss,Bilal El Khannouss,B. El Khannouss,Midfielders,AM,CM|LW,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
+mf_el_mourabet,Sofian El Mourabet,S. El Mourabet,Midfielders,DM,CM,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
+mf_saibari,Ismael Saibari,I. Saibari,Midfielders,AM,CM|RW,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
+mf_amrabat,Sofyan Amrabat,S. Amrabat,Midfielders,DM,CM,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
+fw_gessime,Yan Gessime,Y. Gessime,Forwards,RW,LW|ST,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
+fw_talbi,Chemsdine Talbi,C. Talbi,Forwards,RW,LW|AM,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
+fw_diaz,Brahim Diaz,B. Diaz,Forwards,AM,RW|LW|CF,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
+fw_ezzalzouli,Abde Ezzalzouli,A. Ezzalzouli,Forwards,LW,RW|ST,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
+fw_amaimouni,Amine Amaimouni,A. Amaimouni,Forwards,LW,RW|AM,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
+fw_rahimi,Soufiane Rahimi,S. Rahimi,Forwards,LW,ST|RW,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
+fw_el_kaabi,Ayoub El Kaabi,A. El Kaabi,Forwards,ST,CF,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
+res_al_harrar,Mehdi Al Harrar,M. Al Harrar,Reserves,GK,GK,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
+res_sbai,Abdellah Sbai,A. Sbai,Reserves,LB,LWB|CB,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
+res_saadane,Marouane Saadane,M. Saadane,Reserves,DM,CB|CM,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only

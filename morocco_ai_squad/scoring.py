@@ -2,15 +2,8 @@ from __future__ import annotations
 
 import pandas as pd
 
-
-WEIGHTS = {
-    "recent_form": 0.25,
-    "league_level": 0.15,
-    "playing_time_score": 0.20,
-    "international_experience": 0.15,
-    "tactical_fit": 0.15,
-    "versatility": 0.10,
-}
+from morocco_ai_squad.database.models import NA_VALUE
+from morocco_ai_squad.services.player_scoring import WEIGHTS, add_real_data_scores
 
 
 POSITION_GROUPS = {
@@ -25,26 +18,19 @@ POSITION_GROUPS = {
 
 
 def compute_score(row: pd.Series) -> float:
-    return round(sum(float(row[k]) * weight for k, weight in WEIGHTS.items()), 2)
+    scored = add_real_data_scores(pd.DataFrame([row]))
+    value = scored.iloc[0]["final_score"]
+    return value if value != NA_VALUE else NA_VALUE
 
 
 def add_scores(players: pd.DataFrame) -> pd.DataFrame:
-    df = players.copy()
-    df["final_score"] = df.apply(compute_score, axis=1)
-    df["score_explanation"] = df.apply(explain_score, axis=1)
-    return df.sort_values("final_score", ascending=False).reset_index(drop=True)
+    df = add_real_data_scores(players)
+    sort_key = pd.to_numeric(df["final_score"], errors="coerce").fillna(-1)
+    return df.assign(_sort_key=sort_key).sort_values("_sort_key", ascending=False).drop(columns="_sort_key").reset_index(drop=True)
 
 
 def explain_score(row: pd.Series) -> str:
-    pieces = [
-        f"Forme recente {row['recent_form']}/100 ponderee a 25%",
-        f"niveau championnat {row['league_level']}/100 a 15%",
-        f"temps de jeu {row['playing_time_score']}/100 a 20%",
-        f"experience internationale {row['international_experience']}/100 a 15%",
-        f"fit tactique {row['tactical_fit']}/100 a 15%",
-        f"polyvalence {row['versatility']}/100 a 10%",
-    ]
-    return "; ".join(pieces) + f". Score final: {compute_score(row)}/100."
+    return str(row.get("score_explanation", "Insufficient real data for scoring."))
 
 
 def position_group_for_player(row: pd.Series) -> str:
