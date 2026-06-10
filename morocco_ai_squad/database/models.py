@@ -33,6 +33,7 @@ METRIC_COLUMNS = [
     "xg",
     "xa",
     "avg_rating",
+    "sofascore_rating",
     "market_value",
     "injury_status",
     "transfer_history",

@@ -38,7 +38,7 @@ The project follows these rules:
 | TheSportsDB | Implemented | Uses the free V1 `searchplayers.php` endpoint by player name. Collects profile, club/team when available, nationality, status, position and player image. |
 | API-Football via RapidAPI | Implemented | Requires `API_FOOTBALL_KEY`. Collects player profile/stat fields returned by the provider. |
 | FBref | Implemented | `collectors/fbref_player_stats_scraper.py` scrapes Standard, Shooting, Passing, Pass Types, GCA, Defense, Possession, Playing Time and Misc tables using the widget/page pattern from the notebook. Some environments receive FBref anti-bot pages; failures are logged and fallbacks continue. |
-| Sofascore | Scaffolded | Disabled by default. Enable only with permitted API/access. |
+| SofaScore | Implemented | Uses the public HTTP API pattern from `tunjayoff/sofascore_scraper`: browser-like headers, per-player JSON cache, endpoint retries, 429 backoff and normalized CSV export. Some environments receive `403`; failures are logged and fallbacks continue. |
 | FotMob | Scaffolded | Disabled by default. Enable only with permitted API/access. |
 | Transfermarkt | Implemented | Uses `requests` + `BeautifulSoup` with player slugs. Extracts bio, club, contract, market value and profile metadata when Transfermarkt serves the page. |
 | WhoScored | Scaffolded | Disabled by default due dynamic/session-heavy pages. |

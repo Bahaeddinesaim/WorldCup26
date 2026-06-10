@@ -32,6 +32,7 @@ REQUIRED_DEFAULTS = {
     "xg": NA_VALUE,
     "xa": NA_VALUE,
     "avg_rating": NA_VALUE,
+    "sofascore_rating": NA_VALUE,
     "market_value": NA_VALUE,
     "transfer_history": NA_VALUE,
     "data_source": NA_VALUE,

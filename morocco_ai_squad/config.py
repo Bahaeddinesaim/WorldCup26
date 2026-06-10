@@ -15,6 +15,7 @@ PLAYERS_SEED_PATH = DATA_DIR / "players_seed.csv"
 FBREF_RAW_DIR = DATA_DIR / "fbref_raw"
 PROCESSED_DIR = DATA_DIR / "processed"
 CACHE_DIR = DATA_DIR / "cache"
+SOFASCORE_RAW_DIR = DATA_DIR / "raw" / "sofascore"
 SQLITE_PATH = CACHE_DIR / "squad_data.sqlite"
 
 
