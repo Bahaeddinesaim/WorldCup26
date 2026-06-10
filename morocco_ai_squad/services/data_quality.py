@@ -82,3 +82,33 @@ def quality_summary(players: pd.DataFrame) -> dict:
         "real_data_rows": real_rows,
         "seed_only_rows": int((players.get("collection_status", pd.Series(dtype=str)) == "SEED_ONLY").sum()),
     }
+
+
+def duplicate_report(players: pd.DataFrame) -> pd.DataFrame:
+    players = ensure_required_columns(players)
+    duplicated = players[players.duplicated(subset=["player_id"], keep=False) | players.duplicated(subset=["player_name"], keep=False)]
+    return duplicated[["player_id", "player_name", "data_source", "last_updated"]].copy()
+
+
+def source_availability_report(players: pd.DataFrame) -> pd.DataFrame:
+    players = ensure_required_columns(players)
+    rows = []
+    for source_blob in players["data_source"].astype(str):
+        for source in [part.strip() for part in source_blob.split("|") if part.strip()]:
+            rows.append(source)
+    if not rows:
+        return pd.DataFrame(columns=["source", "player_count"])
+    return pd.Series(rows).value_counts().rename_axis("source").reset_index(name="player_count")
+
+
+def completeness_by_player(players: pd.DataFrame) -> pd.DataFrame:
+    players = ensure_required_columns(players)
+    metric_cols = [col for col in METRIC_COLUMNS if col in players.columns]
+    data = players[["player_name", "data_source", "reliability"]].copy()
+    if not metric_cols:
+        data["completeness_pct"] = 0.0
+        return data
+    data["completeness_pct"] = (
+        (~players[metric_cols].astype(str).isin([NA_VALUE, "", "nan", "None"])).mean(axis=1) * 100
+    ).round(1)
+    return data.sort_values("completeness_pct", ascending=False)

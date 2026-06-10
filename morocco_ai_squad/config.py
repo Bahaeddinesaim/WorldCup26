@@ -12,7 +12,10 @@ DATA_DIR = ROOT_DIR / "data"
 ASSETS_DIR = ROOT_DIR / "assets"
 SEED_PLAYERS_PATH = DATA_DIR / "seed_players.csv"
 PLAYERS_SEED_PATH = DATA_DIR / "players_seed.csv"
-SQLITE_PATH = DATA_DIR / "morocco_squad.db"
+FBREF_RAW_DIR = DATA_DIR / "fbref_raw"
+PROCESSED_DIR = DATA_DIR / "processed"
+CACHE_DIR = DATA_DIR / "cache"
+SQLITE_PATH = CACHE_DIR / "squad_data.sqlite"
 
 
 @dataclass(frozen=True)

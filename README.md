@@ -37,7 +37,7 @@ The project follows these rules:
 | --- | --- | --- |
 | TheSportsDB | Implemented | Uses the free V1 `searchplayers.php` endpoint by player name. Collects profile, club/team when available, nationality, status, position and player image. |
 | API-Football via RapidAPI | Implemented | Requires `API_FOOTBALL_KEY`. Collects player profile/stat fields returned by the provider. |
-| FBref | Semi-automated | Works only when `fbref_url` is configured per player in `data/players_seed.csv`. Parses public HTML tables without bypassing access controls. |
+| FBref | Implemented | `collectors/fbref_player_stats_scraper.py` scrapes Standard, Shooting, Passing, Pass Types, GCA, Defense, Possession, Playing Time and Misc tables using the widget/page pattern from the notebook. Some environments receive FBref anti-bot pages; failures are logged and fallbacks continue. |
 | Sofascore | Scaffolded | Disabled by default. Enable only with permitted API/access. |
 | FotMob | Scaffolded | Disabled by default. Enable only with permitted API/access. |
 | Transfermarkt | Scaffolded | Automated scraping disabled by default. Use allowed export/API/manual CSV. |
@@ -77,8 +77,12 @@ Availability depends entirely on configured sources.
 ├── data/
 │   ├── players_seed.csv
 │   └── seed_players.csv              # legacy demo seed kept for reference
+│   ├── fbref_raw/                    # raw FBref CSV cache
+│   ├── processed/                    # cleaned merged CSV exports
+│   └── cache/squad_data.sqlite       # local SQLite cache, ignored by Git
 ├── morocco_ai_squad/
 │   ├── collectors/
+│   │   ├── fbref_player_stats_scraper.py
 │   │   ├── api_football_collector.py
 │   │   ├── fbref_collector.py
 │   │   ├── football_data_collector.py
@@ -153,7 +157,7 @@ Then click `Refresh Real Data`. The collector parses available public tables and
 Collected data is cached in:
 
 ```text
-data/morocco_squad.db
+data/cache/squad_data.sqlite
 ```
 
 The app loads cached data by default to avoid unnecessary repeated requests. Use `Refresh Real Data` for a manual refresh.
@@ -167,6 +171,13 @@ The `Data Sources & Reliability` page includes:
 - stale timestamp report;
 - incoherence checks;
 - player-level provenance.
+
+The `Raw Data Explorer` page includes:
+
+- raw FBref category CSVs from `data/fbref_raw/`;
+- cleaned FBref/player merge outputs from `data/processed/`;
+- available-column inspection;
+- CSV export buttons.
 
 Programmatic checks live in:
 

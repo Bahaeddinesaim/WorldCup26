@@ -6,4 +6,7 @@ venv/
 data/*.db
 data/*.sqlite
 data/*.sqlite3
+data/cache/*.db
+data/cache/*.sqlite
+data/cache/*.sqlite3
 .streamlit/secrets.toml

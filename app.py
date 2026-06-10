@@ -3,6 +3,7 @@ from __future__ import annotations
 import pandas as pd
 import streamlit as st
 
+from morocco_ai_squad.config import FBREF_RAW_DIR, PROCESSED_DIR
 from morocco_ai_squad.ai_analysis import generate_full_report, generate_player_analysis
 from morocco_ai_squad.charts import group_comparison, line_distribution, radar_player, score_bar
 from morocco_ai_squad.data_loader import ensure_real_data_loaded, ensure_required_columns, filter_players, refresh_real_pipeline, safe_get
@@ -10,9 +11,12 @@ from morocco_ai_squad.database.db import load_fetch_logs
 from morocco_ai_squad.report import build_pdf
 from morocco_ai_squad.scoring import POSITION_GROUPS, add_position_groups, add_scores, compare_by_group
 from morocco_ai_squad.services.data_quality import (
+    completeness_by_player,
+    duplicate_report,
     incoherence_report,
     missing_value_report,
     quality_summary,
+    source_availability_report,
     stale_data_report,
 )
 from morocco_ai_squad.tactics import FORMATIONS, build_lineup, recommended_formation
@@ -38,6 +42,17 @@ def safe_table(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
             data[column] = "N/A"
     return data[columns]
 
+
+def read_csv_files(folder) -> dict[str, pd.DataFrame]:
+    files = {}
+    if folder.exists():
+        for path in sorted(folder.glob("*.csv")):
+            try:
+                files[path.name] = pd.read_csv(path)
+            except Exception:
+                files[path.name] = pd.DataFrame({"error": [f"Could not read {path.name}"]})
+    return files
+
 with st.sidebar:
     st.title("Squad Controls")
     if st.button("Refresh Real Data", use_container_width=True):
@@ -56,7 +71,16 @@ filtered = ensure_required_columns(filter_players(players, search, lines, source
 hero()
 data_notice()
 
-tabs = st.tabs(["Dashboard", "Players", "Comparisons", "Tactics", "AI Report", "Data Sources & Reliability"])
+tabs = st.tabs([
+    "Dashboard",
+    "Players",
+    "Comparisons",
+    "Tactical Analysis",
+    "AI Report",
+    "Raw Data Explorer",
+    "Data Quality",
+    "Data Sources & Reliability",
+])
 
 with tabs[0]:
     age_numeric = pd.to_numeric(filtered["age"], errors="coerce")
@@ -177,6 +201,15 @@ with tabs[2]:
 
 with tabs[3]:
     st.subheader(f"Tactical engine - {formation}")
+    st.caption("Lineups and recommendations are based only on available collected fields. Missing stats remain N/A.")
+    st.dataframe(
+        safe_table(
+            filtered,
+            ["player_name", "line", "primary_position", "club", "league", "minutes_played", "goals", "assists", "final_score", "score_explanation"],
+        ),
+        use_container_width=True,
+        hide_index=True,
+    )
     if filtered.empty:
         st.warning("No players available for tactical selection with the current filters.")
     else:
@@ -224,6 +257,74 @@ with tabs[4]:
         )
 
 with tabs[5]:
+    st.subheader("Raw Data Explorer")
+    raw_files = read_csv_files(FBREF_RAW_DIR)
+    processed_files = read_csv_files(PROCESSED_DIR)
+    if not raw_files and not processed_files:
+        st.info("No FBref raw/processed CSV files yet. Click Refresh Real Data to run the scraper.")
+    raw_tab, clean_tab, columns_tab = st.tabs(["FBref raw tables", "Cleaned data", "Columns"])
+    with raw_tab:
+        if raw_files:
+            selected_raw = st.selectbox("FBref raw CSV", list(raw_files.keys()))
+            raw_df = raw_files[selected_raw]
+            st.dataframe(raw_df, use_container_width=True)
+            st.download_button(
+                "Export raw CSV",
+                raw_df.to_csv(index=False).encode("utf-8"),
+                file_name=selected_raw,
+                mime="text/csv",
+            )
+        else:
+            st.warning("No raw FBref tables saved yet.")
+    with clean_tab:
+        if processed_files:
+            selected_clean = st.selectbox("Processed CSV", list(processed_files.keys()))
+            clean_df = processed_files[selected_clean]
+            st.dataframe(clean_df, use_container_width=True)
+            st.download_button(
+                "Export cleaned CSV",
+                clean_df.to_csv(index=False).encode("utf-8"),
+                file_name=selected_clean,
+                mime="text/csv",
+            )
+        else:
+            st.warning("No processed FBref dataset saved yet.")
+    with columns_tab:
+        all_columns = []
+        for name, frame in {**raw_files, **processed_files}.items():
+            all_columns.extend([{"file": name, "column": col} for col in frame.columns])
+        st.dataframe(pd.DataFrame(all_columns), use_container_width=True, hide_index=True)
+
+with tabs[6]:
+    st.subheader("Data Quality")
+    summary = quality_summary(players)
+    q1, q2, q3, q4 = st.columns(4)
+    with q1:
+        metric_card("Players", str(summary["players"]), "Seeded squad pool")
+    with q2:
+        metric_card("Completeness", f"{summary['metric_completeness_pct']}%", "Metric fields filled")
+    with q3:
+        metric_card("Real rows", str(summary["real_data_rows"]), "Rows enriched by collectors")
+    with q4:
+        metric_card("Seed only", str(summary["seed_only_rows"]), "Need source IDs/API")
+
+    st.markdown("**Missing fields**")
+    st.dataframe(missing_value_report(players), use_container_width=True, hide_index=True)
+    st.markdown("**Duplicates**")
+    duplicates = duplicate_report(players)
+    st.dataframe(duplicates if not duplicates.empty else [{"status": "No duplicates detected"}], use_container_width=True)
+    st.markdown("**Stale data**")
+    stale = stale_data_report(players)
+    st.dataframe(stale if not stale.empty else [{"status": "No stale rows detected"}], use_container_width=True)
+    st.markdown("**Sources available**")
+    st.dataframe(source_availability_report(players), use_container_width=True, hide_index=True)
+    st.markdown("**Completeness by player**")
+    st.dataframe(completeness_by_player(players), use_container_width=True, hide_index=True)
+    st.markdown("**Incoherence report**")
+    incoherent = incoherence_report(players)
+    st.dataframe(incoherent if not incoherent.empty else [{"status": "No incoherence detected"}], use_container_width=True)
+
+with tabs[7]:
     st.subheader("Data Sources & Reliability")
     summary = quality_summary(players)
     q1, q2, q3, q4 = st.columns(4)

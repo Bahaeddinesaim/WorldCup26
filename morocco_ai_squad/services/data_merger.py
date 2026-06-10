@@ -5,7 +5,7 @@ from datetime import timedelta
 import pandas as pd
 
 from morocco_ai_squad.collectors.api_football_collector import ApiFootballCollector
-from morocco_ai_squad.collectors.fbref_collector import FBrefCollector
+from morocco_ai_squad.collectors.fbref_player_stats_scraper import FBrefPlayerStatsScraper
 from morocco_ai_squad.collectors.football_data_collector import FootballDataCollector
 from morocco_ai_squad.collectors.fotmob_collector import FotMobCollector
 from morocco_ai_squad.collectors.sofascore_collector import SofascoreCollector
@@ -22,13 +22,13 @@ from morocco_ai_squad.services.player_scoring import add_real_data_scores
 
 
 COLLECTORS = [
-    TheSportsDBCollector(),
+    FBrefPlayerStatsScraper(),
     SofascoreCollector(),
     TransfermarktCollector(),
     FotMobCollector(),
     WhoScoredCollector(),
+    TheSportsDBCollector(),
     ApiFootballCollector(),
-    FBrefCollector(),
     UnderstatCollector(),
     StatsBombOpenDataCollector(),
     FootballDataCollector(),
@@ -105,6 +105,11 @@ def merge_provider_rows(base: pd.DataFrame, provider_rows: pd.DataFrame) -> pd.D
 
 
 def refresh_real_data() -> tuple[pd.DataFrame, pd.DataFrame]:
+    from morocco_ai_squad.config import CACHE_DIR, FBREF_RAW_DIR, PROCESSED_DIR
+
+    FBREF_RAW_DIR.mkdir(parents=True, exist_ok=True)
+    PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
     seed = load_player_seed()
     players = empty_player_frame(seed)
     all_logs = []
