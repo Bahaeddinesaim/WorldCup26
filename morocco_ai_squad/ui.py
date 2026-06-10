@@ -6,6 +6,8 @@ import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
 
+from morocco_ai_squad.data_loader import safe_get
+
 
 def inject_theme() -> None:
     st.markdown(
@@ -207,9 +209,9 @@ def metric_card(label: str, value: str, caption: str = "") -> None:
     st.markdown(
         f"""
         <div class="metric-card">
-            <span>{html.escape(label)}</span>
-            <strong>{html.escape(value)}</strong>
-            <small>{html.escape(caption)}</small>
+            <span>{html.escape(str(label))}</span>
+            <strong>{html.escape(str(value))}</strong>
+            <small>{html.escape(str(caption))}</small>
         </div>
         """,
         unsafe_allow_html=True,
@@ -229,19 +231,24 @@ def data_notice() -> None:
 
 
 def player_cards(players: pd.DataFrame, limit: int = 6) -> None:
-    rows = players.sort_values("final_score", ascending=False).head(limit).to_dict("records")
+    if players.empty:
+        st.info("No players available for the current filters.")
+        return
+    data = players.copy()
+    data["_score_sort"] = pd.to_numeric(data.get("final_score"), errors="coerce").fillna(-1)
+    rows = data.sort_values("_score_sort", ascending=False).head(limit).to_dict("records")
     cols = st.columns(3)
     for idx, row in enumerate(rows):
         with cols[idx % 3]:
             st.markdown(
                 f"""
                 <div class="player-card">
-                    <h3>{html.escape(row['player_name'])}</h3>
-                    <p>{html.escape(row['primary_position'])} - {html.escape(row['club'])}</p>
-                    <p>{html.escape(row['league'])}</p>
-                    <span class="pill">Score {row.get('final_score', 'N/A')}/100</span>
-                    <span class="pill">{html.escape(str(row.get('reliability', 'LOW')))}</span>
-                    <p style="margin-top:10px;">Source: {html.escape(str(row.get('data_source', 'N/A')))}</p>
+                    <h3>{html.escape(str(safe_get(row, 'player_name')))}</h3>
+                    <p>{html.escape(str(safe_get(row, 'primary_position')))} - {html.escape(str(safe_get(row, 'club')))}</p>
+                    <p>{html.escape(str(safe_get(row, 'league')))}</p>
+                    <span class="pill">Score {html.escape(str(safe_get(row, 'final_score')))}/100</span>
+                    <span class="pill">{html.escape(str(safe_get(row, 'reliability', 'LOW')))}</span>
+                    <p style="margin-top:10px;">Source: {html.escape(str(safe_get(row, 'data_source')))}</p>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -253,8 +260,8 @@ def render_pitch(lineup: dict) -> None:
     for item in lineup["lineup"]:
         slot = item["slot"]
         player = item["player"]
-        name = html.escape(player["short_name"])
-        score = html.escape(str(player["final_score"]))
+        name = html.escape(str(safe_get(player, "short_name", safe_get(player, "player_name"))))
+        score = html.escape(str(safe_get(player, "final_score")))
         dots.append(
             f'<div class="player-dot" style="left:{slot.x}%; top:{slot.y}%;">'
             f"<strong>{name}</strong>"
@@ -365,9 +372,9 @@ def lineup_table(lineup: dict) -> pd.DataFrame:
             {
                 "Position": item["slot"].code,
                 "Role": item["slot"].label,
-                "Player": item["player"]["player_name"],
-                "Score": item["player"]["final_score"],
-                "Reason": item["reason"],
+                "Player": safe_get(item["player"], "player_name"),
+                "Score": safe_get(item["player"], "final_score"),
+                "Reason": item.get("reason", "N/A"),
             }
             for item in lineup["lineup"]
         ]

@@ -5,36 +5,38 @@ import textwrap
 import pandas as pd
 
 from .config import load_settings
+from .data_loader import ensure_required_columns, safe_get
 
 
 def offline_player_analysis(row: pd.Series) -> str:
-    source = row.get("data_source", "N/A")
-    reliability = row.get("reliability", "LOW")
-    score = row.get("final_score", "N/A")
+    source = safe_get(row, "data_source")
+    reliability = safe_get(row, "reliability", "LOW")
+    score = safe_get(row, "final_score")
     if score == "N/A":
         return (
-            f"{row['player_name']} has insufficient verified data for a full AI football profile. "
-            f"Known fields: position={row.get('primary_position', 'N/A')}, club={row.get('club', 'N/A')}, "
-            f"league={row.get('league', 'N/A')}. Source={source}, reliability={reliability}. "
+            f"{safe_get(row, 'player_name')} has insufficient verified data for a full AI football profile. "
+            f"Known fields: position={safe_get(row, 'primary_position')}, club={safe_get(row, 'club')}, "
+            f"league={safe_get(row, 'league')}. Source={source}, reliability={reliability}. "
             "The model will not infer form, weaknesses or tactical superiority without collected evidence."
         )
     return (
-        f"{row['player_name']} profile as a {row['primary_position']} for Morocco. "
+        f"{safe_get(row, 'player_name')} profile as a {safe_get(row, 'primary_position')} for Morocco. "
         f"The current real-data model rates him at {score}/100. "
-        f"Source={source}; reliability={reliability}; last updated={row.get('last_updated', 'N/A')}. "
-        f"Available indicators include form={row.get('recent_form', 'N/A')}, "
-        f"minutes score={row.get('playing_time_score', 'N/A')} and league level={row.get('league_level', 'N/A')}."
+        f"Source={source}; reliability={reliability}; last updated={safe_get(row, 'last_updated')}. "
+        f"Available indicators include form={safe_get(row, 'recent_form')}, "
+        f"minutes score={safe_get(row, 'playing_time_score')} and league level={safe_get(row, 'league_level')}."
     )
 
 
 def offline_squad_report(players: pd.DataFrame, formation_summary: dict) -> str:
+    players = ensure_required_columns(players)
     scored = players.copy()
     scored["score_numeric"] = pd.to_numeric(scored.get("final_score"), errors="coerce")
     top = scored.dropna(subset=["score_numeric"]).sort_values("score_numeric", ascending=False).head(5)
     top_names = ", ".join(top["player_name"].tolist())
     if not top_names:
         top_names = "N/A - insufficient real data to rank players."
-    formation = formation_summary["formation"]
+    formation = formation_summary.get("formation", "N/A")
     completeness = round(
         float((~players.astype(str).isin(["N/A", "", "nan"])).mean(numeric_only=False).mean() * 100),
         1,
@@ -56,9 +58,9 @@ def offline_squad_report(players: pd.DataFrame, formation_summary: dict) -> str:
         {top_names}
 
         Tactical recommendation
-        Strengths: {formation_summary['strengths']}
-        Weaknesses: {formation_summary['weaknesses']}
-        Risks: {formation_summary['risks']}
+        Strengths: {formation_summary.get('strengths', 'N/A')}
+        Weaknesses: {formation_summary.get('weaknesses', 'N/A')}
+        Risks: {formation_summary.get('risks', 'N/A')}
 
         Conclusion
         Conclusion

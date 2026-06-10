@@ -5,7 +5,7 @@ import streamlit as st
 
 from morocco_ai_squad.ai_analysis import generate_full_report, generate_player_analysis
 from morocco_ai_squad.charts import group_comparison, line_distribution, radar_player, score_bar
-from morocco_ai_squad.data_loader import ensure_real_data_loaded, filter_players, refresh_real_pipeline
+from morocco_ai_squad.data_loader import ensure_real_data_loaded, ensure_required_columns, filter_players, refresh_real_pipeline, safe_get
 from morocco_ai_squad.database.db import load_fetch_logs
 from morocco_ai_squad.report import build_pdf
 from morocco_ai_squad.scoring import POSITION_GROUPS, add_position_groups, add_scores, compare_by_group
@@ -27,23 +27,31 @@ st.set_page_config(
 
 inject_theme()
 
-players = ensure_real_data_loaded()
-players = add_position_groups(add_scores(players))
+players = ensure_required_columns(ensure_real_data_loaded())
+players = ensure_required_columns(add_position_groups(add_scores(players)))
+
+
+def safe_table(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
+    data = ensure_required_columns(df)
+    for column in columns:
+        if column not in data.columns:
+            data[column] = "N/A"
+    return data[columns]
 
 with st.sidebar:
     st.title("Squad Controls")
     if st.button("Refresh Real Data", use_container_width=True):
         with st.spinner("Collecting real data from configured sources..."):
             players, logs = refresh_real_pipeline()
-            players = add_position_groups(add_scores(players))
+            players = ensure_required_columns(add_position_groups(add_scores(players)))
             st.success(f"Refresh complete. Collector events: {len(logs)}")
     search = st.text_input("Search player or club")
-    lines = st.multiselect("Lines", sorted(players["line"].unique().tolist()))
-    source_types = st.multiselect("Reliability", sorted(players["reliability"].unique().tolist()))
+    lines = st.multiselect("Lines", sorted(players["line"].dropna().astype(str).unique().tolist()))
+    source_types = st.multiselect("Reliability", sorted(players["reliability"].dropna().astype(str).unique().tolist()))
     formation = st.selectbox("Formation", list(FORMATIONS.keys()), index=list(FORMATIONS.keys()).index("4-2-3-1"))
     st.caption("Unavailable values remain N/A. Add API keys or approved URLs, then refresh.")
 
-filtered = filter_players(players, search, lines, source_types)
+filtered = ensure_required_columns(filter_players(players, search, lines, source_types))
 
 hero()
 data_notice()
@@ -83,34 +91,39 @@ with tabs[1]:
     st.subheader("Detailed player profile")
     if filtered.empty:
         st.warning("No player matches the current filters.")
-        st.stop()
-    selected_name = st.selectbox("Select player", filtered["player_name"].sort_values().tolist())
-    selected = filtered[filtered["player_name"] == selected_name].iloc[0]
+    else:
+        selected_name = st.selectbox("Select player", filtered["player_name"].sort_values().tolist())
+        selected = filtered[filtered["player_name"] == selected_name].iloc[0]
 
-    c1, c2 = st.columns([0.42, 0.58])
-    with c1:
-        st.plotly_chart(radar_player(selected), use_container_width=True)
-    with c2:
-        metric_card(selected["player_name"], f"{selected['final_score']}/100", selected["role_projection"])
-        st.json(
-            {
-                "Position": selected.get("primary_position", "N/A"),
-                "Secondary positions": selected.get("secondary_positions", "N/A"),
-                "Age": selected.get("age", "N/A"),
-                "Club": selected.get("club", "N/A"),
-                "League": selected.get("league", "N/A"),
-                "Data source": selected.get("data_source", "N/A"),
-                "Reliability": selected.get("reliability", "N/A"),
-                "Last updated": selected.get("last_updated", "N/A"),
-                "Injury status": selected.get("injury_status", "N/A"),
-            }
-        )
-        st.markdown("**AI profile**")
-        st.write(generate_player_analysis(selected))
+        c1, c2 = st.columns([0.42, 0.58])
+        with c1:
+            st.plotly_chart(radar_player(selected), use_container_width=True)
+        with c2:
+            metric_card(
+                str(safe_get(selected, "player_name")),
+                f"{safe_get(selected, 'final_score')}/100",
+                str(safe_get(selected, "role_projection")),
+            )
+            st.json(
+                {
+                    "Position": safe_get(selected, "primary_position"),
+                    "Secondary positions": safe_get(selected, "secondary_positions"),
+                    "Age": safe_get(selected, "age"),
+                    "Club": safe_get(selected, "club"),
+                    "League": safe_get(selected, "league"),
+                    "Data source": safe_get(selected, "data_source"),
+                    "Reliability": safe_get(selected, "reliability"),
+                    "Last updated": safe_get(selected, "last_updated"),
+                    "Injury status": safe_get(selected, "injury_status"),
+                }
+            )
+            st.markdown("**AI profile**")
+            st.write(generate_player_analysis(selected))
 
     st.subheader("Recent statistical snapshot")
     st.dataframe(
-        filtered[
+        safe_table(
+            filtered,
             [
                 "player_name",
                 "matches_played",
@@ -125,8 +138,8 @@ with tabs[1]:
                 "data_source",
                 "reliability",
                 "last_updated",
-            ]
-        ],
+            ],
+        ),
         use_container_width=True,
         hide_index=True,
     )
@@ -135,9 +148,10 @@ with tabs[2]:
     st.subheader("Position-by-position comparison")
     st.plotly_chart(group_comparison(filtered), use_container_width=True)
     group = st.selectbox("Position group", list(POSITION_GROUPS.keys()))
-    comparison = compare_by_group(filtered, group)
+    comparison = ensure_required_columns(compare_by_group(filtered, group))
     st.dataframe(
-        comparison[
+        safe_table(
+            comparison,
             [
                 "player_name",
                 "primary_position",
@@ -153,28 +167,32 @@ with tabs[2]:
                 "data_source",
                 "reliability",
                 "score_explanation",
-            ]
-        ],
+            ],
+        ),
         use_container_width=True,
         hide_index=True,
     )
 
 with tabs[3]:
     st.subheader(f"Tactical engine - {formation}")
-    lineup = build_lineup(filtered, formation)
-    pitch_col, detail_col = st.columns([0.48, 0.52])
-    with pitch_col:
-        render_pitch(lineup)
-    with detail_col:
-        st.markdown("**Strengths**")
-        st.write(lineup["strengths"])
-        st.markdown("**Weaknesses**")
-        st.write(lineup["weaknesses"])
-        st.markdown("**Risks**")
-        st.write(lineup["risks"])
-        st.dataframe(lineup_table(lineup), use_container_width=True, hide_index=True)
-        st.markdown("**Recommended substitutes**")
-        st.write(", ".join([p["player_name"] for p in lineup["substitutes"]]))
+    if filtered.empty:
+        st.warning("No players available for tactical selection with the current filters.")
+    else:
+        lineup = build_lineup(filtered, formation)
+        pitch_col, detail_col = st.columns([0.48, 0.52])
+        with pitch_col:
+            render_pitch(lineup)
+        with detail_col:
+            st.markdown("**Strengths**")
+            st.write(safe_get(lineup, "strengths"))
+            st.markdown("**Weaknesses**")
+            st.write(safe_get(lineup, "weaknesses"))
+            st.markdown("**Risks**")
+            st.write(safe_get(lineup, "risks"))
+            st.dataframe(lineup_table(lineup), use_container_width=True, hide_index=True)
+            st.markdown("**Recommended substitutes**")
+            substitutes = [str(safe_get(p, "player_name")) for p in safe_get(lineup, "substitutes", [])]
+            st.write(", ".join(substitutes) if substitutes else "N/A")
 
     st.subheader("All formations")
     cols = st.columns(len(FORMATIONS))
@@ -189,16 +207,19 @@ with tabs[3]:
 
 with tabs[4]:
     st.subheader("Generate Full AI Report")
-    selected_lineup = build_lineup(filtered, recommended_formation(filtered))
-    report_text = generate_full_report(filtered, selected_lineup)
-    st.text_area("Generated report", report_text, height=460)
-    pdf_bytes = build_pdf(report_text)
-    st.download_button(
-        "Download PDF report",
-        data=pdf_bytes,
-        file_name="morocco_wc2026_ai_squad_report.pdf",
-        mime="application/pdf",
-    )
+    if filtered.empty:
+        st.warning("No players available for report generation with the current filters.")
+    else:
+        selected_lineup = build_lineup(filtered, recommended_formation(filtered))
+        report_text = generate_full_report(filtered, selected_lineup)
+        st.text_area("Generated report", report_text, height=460)
+        pdf_bytes = build_pdf(report_text)
+        st.download_button(
+            "Download PDF report",
+            data=pdf_bytes,
+            file_name="morocco_wc2026_ai_squad_report.pdf",
+            mime="application/pdf",
+        )
 
 with tabs[5]:
     st.subheader("Data Sources & Reliability")
@@ -233,7 +254,8 @@ with tabs[5]:
 
     st.markdown("**Player provenance**")
     st.dataframe(
-        players[
+        safe_table(
+            players,
             [
                 "player_name",
                 "club",
@@ -244,8 +266,8 @@ with tabs[5]:
                 "reliability",
                 "collection_status",
                 "injury_status",
-            ]
-        ],
+            ],
+        ),
         use_container_width=True,
         hide_index=True,
     )

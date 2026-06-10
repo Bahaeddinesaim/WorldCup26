@@ -8,7 +8,16 @@ import plotly.graph_objects as go
 COLORWAY = ["#c1121f", "#006b3f", "#f5c542", "#ffffff", "#222222"]
 
 
+def _empty_figure(message: str, height: int) -> go.Figure:
+    fig = go.Figure()
+    fig.add_annotation(text=message, showarrow=False)
+    fig.update_layout(height=height, margin=dict(l=10, r=10, t=20, b=10))
+    return fig
+
+
 def line_distribution(players: pd.DataFrame) -> go.Figure:
+    if players.empty or "line" not in players.columns:
+        return _empty_figure("No squad line data available", 310)
     fig = px.pie(
         players,
         names="line",
@@ -21,13 +30,12 @@ def line_distribution(players: pd.DataFrame) -> go.Figure:
 
 def score_bar(players: pd.DataFrame, n: int = 12) -> go.Figure:
     data = players.copy()
+    if "final_score" not in data.columns:
+        return _empty_figure("No reliable real-data score available yet", 430)
     data["score_numeric"] = pd.to_numeric(data["final_score"], errors="coerce")
     data = data.dropna(subset=["score_numeric"]).sort_values("score_numeric", ascending=False).head(n)
     if data.empty:
-        fig = go.Figure()
-        fig.add_annotation(text="No reliable real-data score available yet", showarrow=False)
-        fig.update_layout(height=430, margin=dict(l=10, r=10, t=20, b=10))
-        return fig
+        return _empty_figure("No reliable real-data score available yet", 430)
     fig = px.bar(
         data,
         x="score_numeric",
@@ -80,12 +88,11 @@ def radar_player(row: pd.Series) -> go.Figure:
 
 def group_comparison(players: pd.DataFrame) -> go.Figure:
     players = players.copy()
+    if players.empty or "final_score" not in players.columns or "position_group" not in players.columns:
+        return _empty_figure("No reliable group scores available yet", 340)
     players["score_numeric"] = pd.to_numeric(players["final_score"], errors="coerce")
     if players["score_numeric"].dropna().empty:
-        fig = go.Figure()
-        fig.add_annotation(text="No reliable group scores available yet", showarrow=False)
-        fig.update_layout(height=340, margin=dict(l=10, r=10, t=20, b=20))
-        return fig
+        return _empty_figure("No reliable group scores available yet", 340)
     grouped = (
         players.groupby("position_group", as_index=False)["score_numeric"]
         .mean()

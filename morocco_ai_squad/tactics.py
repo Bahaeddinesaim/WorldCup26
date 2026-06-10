@@ -4,6 +4,8 @@ from dataclasses import dataclass
 
 import pandas as pd
 
+from morocco_ai_squad.data_loader import ensure_required_columns, safe_get
+
 
 @dataclass(frozen=True)
 class Slot:
@@ -113,7 +115,7 @@ FORMATION_NOTES = {
 
 
 def _candidate_positions(row: pd.Series) -> set[str]:
-    return {row["primary_position"], *str(row["secondary_positions"]).split("|")}
+    return {str(safe_get(row, "primary_position")), *str(safe_get(row, "secondary_positions")).split("|")}
 
 
 def _slot_score(row: pd.Series, slot: Slot) -> float:
@@ -132,6 +134,11 @@ def _slot_score(row: pd.Series, slot: Slot) -> float:
 
 
 def build_lineup(players: pd.DataFrame, formation: str) -> dict:
+    players = ensure_required_columns(players)
+    if players.empty:
+        notes = FORMATION_NOTES[formation]
+        return {"formation": formation, "lineup": [], "substitutes": [], **notes}
+
     available = players.copy()
     available["_score_sort"] = pd.to_numeric(available.get("final_score"), errors="coerce").fillna(-1)
     available = available.sort_values("_score_sort", ascending=False)
@@ -139,10 +146,12 @@ def build_lineup(players: pd.DataFrame, formation: str) -> dict:
     lineup = []
 
     for slot in FORMATIONS[formation]:
-        candidates = available[~available["player_id"].isin(selected_ids)].copy()
+        candidates = available[~available["player_id"].astype(str).isin(selected_ids)].copy()
+        if candidates.empty:
+            break
         candidates["slot_score"] = candidates.apply(lambda row: _slot_score(row, slot), axis=1)
         chosen = candidates.sort_values("slot_score", ascending=False).iloc[0]
-        selected_ids.add(chosen["player_id"])
+        selected_ids.add(str(safe_get(chosen, "player_id", safe_get(chosen, "player_name"))))
         lineup.append(
             {
                 "slot": slot,
@@ -152,7 +161,7 @@ def build_lineup(players: pd.DataFrame, formation: str) -> dict:
         )
 
     substitutes = (
-        players[~players["player_id"].isin(selected_ids)]
+        players[~players["player_id"].astype(str).isin(selected_ids)]
         .assign(_score_sort=pd.to_numeric(players["final_score"], errors="coerce").fillna(-1))
         .sort_values("_score_sort", ascending=False)
         .drop(columns="_score_sort")
@@ -164,20 +173,23 @@ def build_lineup(players: pd.DataFrame, formation: str) -> dict:
 
 
 def _selection_reason(player: pd.Series, slot: Slot) -> str:
-    score = player.get("final_score", "N/A")
+    score = safe_get(player, "final_score")
     if score == "N/A" or pd.isna(pd.to_numeric(score, errors="coerce")):
         return (
-            f"{player['player_name']} est place comme {slot.label.lower()} par compatibilite de poste, "
+            f"{safe_get(player, 'player_name')} est place comme {slot.label.lower()} par compatibilite de poste, "
             "mais les donnees reelles sont insuffisantes pour justifier un score fiable."
         )
     return (
-        f"{player['player_name']} est choisi comme {slot.label.lower()} grace a un score de "
-        f"{score}/100, un fit tactique de {player.get('tactical_fit', 'N/A')}/100 "
+        f"{safe_get(player, 'player_name')} est choisi comme {slot.label.lower()} grace a un score de "
+        f"{score}/100, un fit tactique de {safe_get(player, 'tactical_fit')}/100 "
         f"et un profil compatible avec {slot.code}."
     )
 
 
 def recommended_formation(players: pd.DataFrame) -> str:
+    players = ensure_required_columns(players)
+    if players.empty:
+        return "4-2-3-1"
     scores = {}
     for formation in FORMATIONS:
         lineup = build_lineup(players, formation)["lineup"]
