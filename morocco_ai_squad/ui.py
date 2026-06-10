@@ -4,6 +4,7 @@ import html
 
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 
 
 def inject_theme() -> None:
@@ -256,14 +257,107 @@ def render_pitch(lineup: dict) -> None:
         name = html.escape(player["short_name"])
         score = html.escape(str(player["final_score"]))
         dots.append(
-            f"""
-            <div class="player-dot" style="left:{slot.x}%; top:{slot.y}%;">
-                <strong>{name}</strong>
-                <span>{html.escape(slot.code)} - {score}</span>
-            </div>
-            """
+            f'<div class="player-dot" style="left:{slot.x}%; top:{slot.y}%;">'
+            f"<strong>{name}</strong>"
+            f"<span>{html.escape(slot.code)} - {score}</span>"
+            "</div>"
         )
-    st.markdown(f"<div class='pitch'>{''.join(dots)}</div>", unsafe_allow_html=True)
+
+    pitch_html = f"""
+    <!doctype html>
+    <html>
+    <head>
+    <style>
+    html, body {{
+        margin: 0;
+        padding: 0;
+        background: transparent;
+        font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }}
+    .pitch {{
+        position: relative;
+        width: 100%;
+        height: 680px;
+        background:
+            linear-gradient(90deg, rgba(255,255,255,.08) 49.5%, rgba(255,255,255,.35) 50%, rgba(255,255,255,.08) 50.5%),
+            repeating-linear-gradient(0deg, #136c45 0 72px, #0d5d3a 72px 144px);
+        border: 3px solid rgba(255,255,255,.86);
+        box-sizing: border-box;
+        box-shadow: inset 0 0 0 2px rgba(255,255,255,.18), 0 22px 54px rgba(0,0,0,.14);
+        overflow: hidden;
+    }}
+    .pitch:before {{
+        content: "";
+        position: absolute;
+        inset: 5%;
+        border: 2px solid rgba(255,255,255,.55);
+    }}
+    .pitch:after {{
+        content: "";
+        position: absolute;
+        left: 33%;
+        top: 43%;
+        width: 34%;
+        aspect-ratio: 1;
+        border: 2px solid rgba(255,255,255,.55);
+        border-radius: 50%;
+    }}
+    .box-top, .box-bottom {{
+        position: absolute;
+        left: 27%;
+        width: 46%;
+        height: 15%;
+        border: 2px solid rgba(255,255,255,.55);
+        z-index: 1;
+    }}
+    .box-top {{ top: 5%; border-top: 0; }}
+    .box-bottom {{ bottom: 5%; border-bottom: 0; }}
+    .player-dot {{
+        position: absolute;
+        width: 122px;
+        min-height: 58px;
+        transform: translate(-50%, -50%);
+        background: rgba(255,255,255,.96);
+        border: 2px solid #d8a928;
+        color: #101713;
+        text-align: center;
+        padding: 8px 7px;
+        box-shadow: 0 10px 22px rgba(0,0,0,.22);
+        z-index: 3;
+        box-sizing: border-box;
+    }}
+    .player-dot strong {{
+        display: block;
+        font-size: 12px;
+        line-height: 1.15;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }}
+    .player-dot span {{
+        display: block;
+        color: #b80f1f;
+        font-size: 11px;
+        margin-top: 3px;
+    }}
+    @media (max-width: 520px) {{
+        .pitch {{ height: 600px; }}
+        .player-dot {{ width: 94px; min-height: 52px; padding: 7px 5px; }}
+        .player-dot strong {{ font-size: 10px; }}
+        .player-dot span {{ font-size: 9px; }}
+    }}
+    </style>
+    </head>
+    <body>
+        <div class="pitch">
+            <div class="box-top"></div>
+            <div class="box-bottom"></div>
+            {''.join(dots)}
+        </div>
+    </body>
+    </html>
+    """
+    components.html(pitch_html, height=700, scrolling=False)
 
 
 def lineup_table(lineup: dict) -> pd.DataFrame:
