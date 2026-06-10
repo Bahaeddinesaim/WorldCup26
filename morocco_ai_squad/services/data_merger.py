@@ -10,6 +10,7 @@ from morocco_ai_squad.collectors.football_data_collector import FootballDataColl
 from morocco_ai_squad.collectors.fotmob_collector import FotMobCollector
 from morocco_ai_squad.collectors.sofascore_collector import SofascoreCollector
 from morocco_ai_squad.collectors.statsbomb_open_data_collector import StatsBombOpenDataCollector
+from morocco_ai_squad.collectors.thesportsdb_collector import TheSportsDBCollector
 from morocco_ai_squad.collectors.transfermarkt_collector import TransfermarktCollector
 from morocco_ai_squad.collectors.understat_collector import UnderstatCollector
 from morocco_ai_squad.collectors.whoscored_collector import WhoScoredCollector
@@ -21,12 +22,13 @@ from morocco_ai_squad.services.player_scoring import add_real_data_scores
 
 
 COLLECTORS = [
+    TheSportsDBCollector(),
+    SofascoreCollector(),
+    TransfermarktCollector(),
+    FotMobCollector(),
+    WhoScoredCollector(),
     ApiFootballCollector(),
     FBrefCollector(),
-    SofascoreCollector(),
-    FotMobCollector(),
-    TransfermarktCollector(),
-    WhoScoredCollector(),
     UnderstatCollector(),
     StatsBombOpenDataCollector(),
     FootballDataCollector(),
@@ -34,7 +36,34 @@ COLLECTORS = [
 
 
 def load_player_seed(path=PLAYERS_SEED_PATH) -> pd.DataFrame:
-    return pd.read_csv(path, keep_default_na=False).replace("", NA_VALUE)
+    seed = pd.read_csv(path, keep_default_na=False).replace("", NA_VALUE)
+    defaults = {
+        "player_id": NA_VALUE,
+        "player_name": NA_VALUE,
+        "short_name": NA_VALUE,
+        "line": NA_VALUE,
+        "primary_position": NA_VALUE,
+        "secondary_positions": NA_VALUE,
+        "country": "Morocco",
+        "sofascore_url": NA_VALUE,
+        "sofascore_id": NA_VALUE,
+        "transfermarkt_url": NA_VALUE,
+        "fotmob_url": NA_VALUE,
+        "fotmob_id": NA_VALUE,
+        "fbref_url": NA_VALUE,
+        "whoscored_url": NA_VALUE,
+        "understat_id": NA_VALUE,
+        "api_football_id": NA_VALUE,
+        "statsbomb_player_id": NA_VALUE,
+    }
+    for column, default in defaults.items():
+        if column not in seed.columns:
+            seed[column] = default
+    missing_ids = seed["player_id"].astype(str).isin(["", NA_VALUE, "nan"])
+    seed.loc[missing_ids, "player_id"] = seed.loc[missing_ids, "player_name"].str.lower().str.replace(r"[^a-z0-9]+", "_", regex=True)
+    missing_short = seed["short_name"].astype(str).isin(["", NA_VALUE, "nan"])
+    seed.loc[missing_short, "short_name"] = seed.loc[missing_short, "player_name"]
+    return seed
 
 
 def empty_player_frame(seed: pd.DataFrame) -> pd.DataFrame:

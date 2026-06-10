@@ -21,12 +21,21 @@ class BaseCollector:
     name = "base"
     reliability = "LOW"
 
-    def log(self, status: str, message: str, source_url: str = "N/A") -> dict:
+    def log(
+        self,
+        status: str,
+        message: str,
+        source_url: str = "N/A",
+        player_name: str = "N/A",
+        fields_updated: int = 0,
+    ) -> dict:
         return {
             "collector": self.name,
+            "player_name": player_name,
             "status": status,
             "message": message,
             "source_url": source_url,
+            "fields_updated": fields_updated,
             "last_updated": utc_now(),
         }
 

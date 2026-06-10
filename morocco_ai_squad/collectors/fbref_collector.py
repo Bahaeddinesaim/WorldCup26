@@ -14,7 +14,11 @@ class FBrefCollector(BaseCollector):
         logs: list[dict] = []
         configured = seed[seed["fbref_url"].fillna("N/A") != "N/A"]
         if configured.empty:
-            return self.skipped("No fbref_url configured in data/players_seed.csv.")
+            return CollectorResult(
+                self.name,
+                pd.DataFrame(),
+                pd.DataFrame([self.log("NOT_CONFIGURED", "No fbref_url configured in data/players_seed.csv.")]),
+            )
 
         for player in configured.to_dict("records"):
             url = player["fbref_url"]

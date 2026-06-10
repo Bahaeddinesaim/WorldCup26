@@ -12,5 +12,13 @@ class UnderstatCollector(BaseCollector):
     def fetch(self, seed: pd.DataFrame) -> CollectorResult:
         configured = seed[seed["understat_id"].fillna("N/A") != "N/A"]
         if configured.empty:
-            return self.skipped("No understat_id configured. Understat coverage is league-limited.")
-        return self.skipped("Understat collector scaffolded; add permitted endpoint handling before enabling.")
+            return CollectorResult(
+                self.name,
+                pd.DataFrame(),
+                pd.DataFrame([self.log("NOT_CONFIGURED", "No understat_id configured. Understat coverage is league-limited.")]),
+            )
+        return CollectorResult(
+            self.name,
+            pd.DataFrame(),
+            pd.DataFrame([self.log("NOT_CONFIGURED", "Understat parser not enabled for configured IDs yet.")]),
+        )

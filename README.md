@@ -35,6 +35,7 @@ The project follows these rules:
 
 | Source | Status | Notes |
 | --- | --- | --- |
+| TheSportsDB | Implemented | Uses the free V1 `searchplayers.php` endpoint by player name. Collects profile, club/team when available, nationality, status, position and player image. |
 | API-Football via RapidAPI | Implemented | Requires `API_FOOTBALL_KEY`. Collects player profile/stat fields returned by the provider. |
 | FBref | Semi-automated | Works only when `fbref_url` is configured per player in `data/players_seed.csv`. Parses public HTML tables without bypassing access controls. |
 | Sofascore | Scaffolded | Disabled by default. Enable only with permitted API/access. |

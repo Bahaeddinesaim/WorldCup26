@@ -23,6 +23,8 @@ METRIC_COLUMNS = [
     "age",
     "club",
     "league",
+    "player_status",
+    "player_image",
     "matches_played",
     "minutes_played",
     "goals",
@@ -63,8 +65,10 @@ PLAYER_COLUMNS = IDENTITY_COLUMNS + METRIC_COLUMNS + PROVENANCE_COLUMNS + SCORIN
 
 FETCH_LOG_COLUMNS = [
     "collector",
+    "player_name",
     "status",
     "message",
     "source_url",
+    "fields_updated",
     "last_updated",
 ]

@@ -1,30 +1,30 @@
-player_id,player_name,short_name,line,primary_position,secondary_positions,country,fbref_url,sofascore_id,fotmob_id,transfermarkt_url,whoscored_url,understat_id,api_football_id,statsbomb_player_id,notes
-gk_bounou,Yassine Bounou,Y. Bounou,Goalkeepers,GK,GK,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
-gk_el_kajoui,Munir El Kajoui,M. El Kajoui,Goalkeepers,GK,GK,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
-gk_tagnaouti,Ahmed Reda Tagnaouti,A. Tagnaouti,Goalkeepers,GK,GK,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
-df_hakimi,Achraf Hakimi,A. Hakimi,Defenders,RB,RWB|LB|RW,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
-df_mazraoui,Noussair Mazraoui,N. Mazraoui,Defenders,LB,RB|DM|CM,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
-df_diop,Isa Diop,I. Diop,Defenders,CB,CB,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
-df_salah_eddine,Anass Salah-Eddine,Salah Eddine,Defenders,LB,LWB|CM,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
-df_el_ouahdi,Zakaria El Ouahdi,Z. El Ouahdi,Defenders,RB,RWB|RW,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
-df_halhal,Rachid Halhal,R. Halhal,Defenders,CB,CB|DM,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
-df_aguerd,Nayef Aguerd,N. Aguerd,Defenders,CB,CB|LB,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
-df_belammari,Youssef Belammari,Y. Belammari,Defenders,LB,LWB,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
-df_riad,Chadi Riad,C. Riad,Defenders,CB,CB,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
-mf_el_aynaoui,Neil El Aynaoui,N. El Aynaoui,Midfielders,CM,DM|AM,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
-mf_bouaddi,Ayyoub Bouaddi,A. Bouaddi,Midfielders,CM,DM|AM,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
-mf_ounahi,Azzedine Ounahi,A. Ounahi,Midfielders,CM,AM|DM,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
-mf_el_khannouss,Bilal El Khannouss,B. El Khannouss,Midfielders,AM,CM|LW,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
-mf_el_mourabet,Sofian El Mourabet,S. El Mourabet,Midfielders,DM,CM,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
-mf_saibari,Ismael Saibari,I. Saibari,Midfielders,AM,CM|RW,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
-mf_amrabat,Sofyan Amrabat,S. Amrabat,Midfielders,DM,CM,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
-fw_gessime,Yan Gessime,Y. Gessime,Forwards,RW,LW|ST,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
-fw_talbi,Chemsdine Talbi,C. Talbi,Forwards,RW,LW|AM,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
-fw_diaz,Brahim Diaz,B. Diaz,Forwards,AM,RW|LW|CF,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
-fw_ezzalzouli,Abde Ezzalzouli,A. Ezzalzouli,Forwards,LW,RW|ST,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
-fw_amaimouni,Amine Amaimouni,A. Amaimouni,Forwards,LW,RW|AM,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
-fw_rahimi,Soufiane Rahimi,S. Rahimi,Forwards,LW,ST|RW,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
-fw_el_kaabi,Ayoub El Kaabi,A. El Kaabi,Forwards,ST,CF,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
-res_al_harrar,Mehdi Al Harrar,M. Al Harrar,Reserves,GK,GK,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
-res_sbai,Abdellah Sbai,A. Sbai,Reserves,LB,LWB|CB,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
-res_saadane,Marouane Saadane,M. Saadane,Reserves,DM,CB|CM,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Manual squad seed only
+player_id,player_name,short_name,line,primary_position,secondary_positions,country,sofascore_url,sofascore_id,transfermarkt_url,fotmob_url,fbref_url,whoscored_url,understat_id,api_football_id,statsbomb_player_id,notes
+gk_bounou,Yassine Bounou,Y. Bounou,Goalkeepers,GK,GK,Morocco,https://www.sofascore.com/football/player/yassine-bounou/970576,970576,https://www.transfermarkt.fr/yassine-bounou/profil/spieler/207834,,N/A,N/A,N/A,N/A,N/A,Provided real source IDs
+gk_el_kajoui,Munir El Kajoui,M. El Kajoui,Goalkeepers,GK,GK,Morocco,https://www.sofascore.com/football/player/munir-el-kajoui/30936,30936,https://www.transfermarkt.com/munir-mohamedi/profil/spieler/167290,,N/A,N/A,N/A,N/A,N/A,Provided real source IDs
+gk_tagnaouti,Ahmed Reda Tagnaouti,A. Tagnaouti,Goalkeepers,GK,GK,Morocco,https://www.sofascore.com/football/player/ahmed-reda-tagnaouti/827019,827019,https://www.transfermarkt.com/ahmed-reda-tagnaouti/profil/spieler/438902,,N/A,N/A,N/A,N/A,N/A,Provided real source IDs
+df_hakimi,Achraf Hakimi,A. Hakimi,Defenders,RB,RWB|LB|RW,Morocco,https://www.sofascore.com/football/player/achraf-hakimi/814594,814594,https://www.transfermarkt.fr/achraf-hakimi/profil/spieler/398073,,N/A,N/A,N/A,N/A,N/A,Provided real source IDs
+df_mazraoui,Noussair Mazraoui,N. Mazraoui,Defenders,LB,RB|DM|CM,Morocco,https://www.sofascore.com/football/player/noussair-mazraoui/847030,847030,https://www.transfermarkt.com/noussair-mazraoui/profil/spieler/340456,,N/A,N/A,N/A,N/A,N/A,Provided real source IDs
+df_aguerd,Nayef Aguerd,N. Aguerd,Defenders,CB,CB|LB,Morocco,https://www.sofascore.com/football/player/nayef-aguerd/877102,877102,https://www.transfermarkt.com/nayef-aguerd/profil/spieler/361914,,N/A,N/A,N/A,N/A,N/A,Provided real source IDs
+df_diop,Issa Diop,I. Diop,Defenders,CB,CB,Morocco,https://www.sofascore.com/football/player/issa-diop/788790,788790,https://www.transfermarkt.com/issa-diop/profil/spieler/272622,,N/A,N/A,N/A,N/A,N/A,Provided real source IDs
+df_riad,Chadi Riad,C. Riad,Defenders,CB,CB,Morocco,https://www.sofascore.com/football/player/chadi-riad/1064218,1064218,https://www.transfermarkt.com/chadi-riad/profil/spieler/653325,,N/A,N/A,N/A,N/A,N/A,Provided real source IDs
+df_belammari,Youssef Belammari,Y. Belammari,Defenders,LB,LWB,Morocco,https://www.sofascore.com/football/player/youssef-belammari/919484,919484,https://www.transfermarkt.com/youssef-belammari/profil/spieler/518804,,N/A,N/A,N/A,N/A,N/A,Provided real source IDs
+df_el_ouahdi,Zakaria El Ouahdi,Z. El Ouahdi,Defenders,RB,RWB|RW,Morocco,https://www.sofascore.com/football/player/zakaria-el-ouahdi/1046346,1046346,https://www.transfermarkt.com/zakaria-el-ouahdi/profil/spieler/742364,,N/A,N/A,N/A,N/A,N/A,Provided real source IDs
+df_salah_eddine,Anass Salah-Eddine,Salah Eddine,Defenders,LB,LWB|CM,Morocco,https://www.sofascore.com/football/player/anass-salah-eddine/961684,961684,https://www.transfermarkt.com/anass-salah-eddine/profil/spieler/485584,,N/A,N/A,N/A,N/A,N/A,Provided real source IDs
+df_halhal,Rachid Halhal,R. Halhal,Defenders,CB,CB|DM,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Needs source IDs
+mf_el_aynaoui,Neil El Aynaoui,N. El Aynaoui,Midfielders,CM,DM|AM,Morocco,https://www.sofascore.com/football/player/neil-el-aynaoui/1128530,1128530,https://www.transfermarkt.com/neil-el-aynaoui/profil/spieler/901019,,N/A,N/A,N/A,N/A,N/A,Provided real source IDs
+mf_bouaddi,Ayyoub Bouaddi,A. Bouaddi,Midfielders,CM,DM|AM,Morocco,https://www.sofascore.com/football/player/bouaddi-ayyoub/1564180,1564180,https://www.transfermarkt.fr/ayyoub-bouaddi/profil/spieler/1097139,,N/A,N/A,N/A,N/A,N/A,Provided real source IDs
+mf_amrabat,Sofyan Amrabat,S. Amrabat,Midfielders,DM,CM,Morocco,https://www.sofascore.com/football/player/sofyan-amrabat/855742,855742,https://www.transfermarkt.com/sofyan-amrabat/profil/spieler/287579,,N/A,N/A,N/A,N/A,N/A,Provided real source IDs
+mf_saibari,Ismael Saibari,I. Saibari,Midfielders,AM,CM|RW,Morocco,https://www.sofascore.com/football/player/ismael-saibari/1024762,1024762,https://www.transfermarkt.com/ismael-saibari/profil/spieler/659808,,N/A,N/A,N/A,N/A,N/A,Provided real source IDs
+mf_ounahi,Azzedine Ounahi,A. Ounahi,Midfielders,CM,AM|DM,Morocco,https://www.sofascore.com/fr/football/player/azzedine-ounahi/991421,991421,https://www.transfermarkt.com/azzedine-ounahi/profil/spieler/578915,,N/A,N/A,N/A,N/A,N/A,Provided real source IDs
+mf_el_khannouss,Bilal El Khannouss,B. El Khannouss,Midfielders,AM,CM|LW,Morocco,https://www.sofascore.com/fr/football/player/bilal-el-khannouss/1126569,1126569,https://www.transfermarkt.com/bilal-el-khannouss/profil/spieler/847978,,N/A,N/A,N/A,N/A,N/A,Provided real source IDs
+mf_el_mourabet,Sofian El Mourabet,S. El Mourabet,Midfielders,DM,CM,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Needs source IDs
+fw_diaz,Brahim Diaz,B. Diaz,Forwards,AM,RW|LW|CF,Morocco,https://www.sofascore.com/fr/football/player/brahim-diaz/835485,835485,https://www.transfermarkt.com/brahim-diaz/profil/spieler/314678,,N/A,N/A,N/A,N/A,N/A,Provided real source IDs
+fw_ezzalzouli,Abdessamad Ezzalzouli,A. Ezzalzouli,Forwards,LW,RW|ST,Morocco,https://www.sofascore.com/fr/football/player/abdessamad-ezzalzouli/1011375,1011375,https://www.transfermarkt.com/abdessamad-ezzalzouli/profil/spieler/724656,,N/A,N/A,N/A,N/A,N/A,Provided real source IDs
+fw_rahimi,Soufiane Rahimi,S. Rahimi,Forwards,LW,ST|RW,Morocco,https://www.sofascore.com/fr/football/player/soufiane-rahimi/953995,953995,https://www.transfermarkt.com/soufiane-rahimi/profil/spieler/522719,,N/A,N/A,N/A,N/A,N/A,Provided real source IDs
+fw_el_kaabi,Ayoub El Kaabi,A. El Kaabi,Forwards,ST,CF,Morocco,https://www.sofascore.com/fr/football/player/ayoub-el-kaabi/919793,919793,https://www.transfermarkt.com/ayoub-el-kaabi/profil/spieler/357632,,N/A,N/A,N/A,N/A,N/A,Provided real source IDs
+fw_gessime,Yan Gessime,Y. Gessime,Forwards,RW,LW|ST,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Needs source IDs
+fw_amaimouni,Ayoube Amaimouni Echghouyab,A. Amaimouni,Forwards,LW,RW|AM,Morocco,https://www.sofascore.com/fr/football/player/ayoube-amaimouni-echghouyab/1898148,1898148,,,N/A,N/A,N/A,N/A,N/A,Provided real source IDs
+fw_talbi,Chemsdine Talbi,C. Talbi,Forwards,RW,LW|AM,Morocco,https://www.sofascore.com/football/player/chemsdine-talbi/1142675,1142675,https://www.transfermarkt.com/chemsdine-talbi/profil/spieler/743384,,N/A,N/A,N/A,N/A,N/A,Provided real source IDs
+res_al_harrar,Mehdi Al Harrar,M. Al Harrar,Reserves,GK,GK,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Needs source IDs
+res_sbai,Abdellah Sbai,A. Sbai,Reserves,LB,LWB|CB,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Needs source IDs
+res_saadane,Marouane Saadane,M. Saadane,Reserves,DM,CB|CM,Morocco,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Needs source IDs

@@ -10,4 +10,8 @@ class WhoScoredCollector(BaseCollector):
     reliability = "MEDIUM"
 
     def fetch(self, seed: pd.DataFrame) -> CollectorResult:
-        return self.skipped("WhoScored scraping is disabled by default; many pages require dynamic/session access.")
+        logs = [
+            self.log("NOT_CONFIGURED", f"[INFO] {row['player_name']} Source: WhoScored missing whoscored_url", row.get("whoscored_url", "N/A"), row["player_name"], 0)
+            for row in seed.to_dict("records")
+        ]
+        return CollectorResult(self.name, pd.DataFrame(), pd.DataFrame(logs))

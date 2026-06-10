@@ -10,7 +10,15 @@ class StatsBombOpenDataCollector(BaseCollector):
     reliability = "HIGH"
 
     def fetch(self, seed: pd.DataFrame) -> CollectorResult:
-        return self.skipped(
-            "StatsBomb Open Data is match-event data, not universal season player data. "
-            "Configure competition/match IDs before extracting player events."
+        return CollectorResult(
+            self.name,
+            pd.DataFrame(),
+            pd.DataFrame(
+                [
+                    self.log(
+                        "NOT_CONFIGURED",
+                        "StatsBomb Open Data needs competition/match IDs before extracting player events.",
+                    )
+                ]
+            ),
         )

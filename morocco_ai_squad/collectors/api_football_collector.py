@@ -14,7 +14,11 @@ class ApiFootballCollector(BaseCollector):
     def fetch(self, seed: pd.DataFrame, season: int = 2025) -> CollectorResult:
         settings = load_settings()
         if not settings.api_football_key:
-            return self.skipped("API_FOOTBALL_KEY is missing. Add it to .env to collect provider data.")
+            return CollectorResult(
+                self.name,
+                pd.DataFrame(),
+                pd.DataFrame([self.log("NOT_CONFIGURED", "API_FOOTBALL_KEY is missing. Add it to .env to collect provider data.")]),
+            )
 
         rows: list[dict] = []
         logs: list[dict] = []

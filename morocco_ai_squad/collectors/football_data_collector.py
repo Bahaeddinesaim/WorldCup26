@@ -10,6 +10,15 @@ class FootballDataCollector(BaseCollector):
     reliability = "HIGH"
 
     def fetch(self, seed: pd.DataFrame) -> CollectorResult:
-        return self.skipped(
-            "Football-Data.co.uk mainly provides match/team CSVs, not player-level squad statistics."
+        return CollectorResult(
+            self.name,
+            pd.DataFrame(),
+            pd.DataFrame(
+                [
+                    self.log(
+                        "NOT_APPLICABLE",
+                        "Football-Data.co.uk mainly provides match/team CSVs, not player-level squad statistics.",
+                    )
+                ]
+            ),
         )
